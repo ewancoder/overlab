@@ -1,21 +1,37 @@
 import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
-import { Workout } from '../models';
+import { ExcercisePickerComponent } from '../excercise-picker/excercise-picker.component';
+import { FeWorkoutPlan } from '../models';
 import { WorkoutService } from '../workout.service';
+
+/// eslint-disable-next-line @typescript-eslint/no-explicit-any
+//declare const Notification: any;
 
 @Component({
     selector: 'olab-workout',
     standalone: true,
-    imports: [],
+    imports: [ExcercisePickerComponent],
     templateUrl: './workout.component.html',
     styleUrl: './workout.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkoutComponent implements OnInit {
-    workoutSignal = signal<Workout | null>(null);
+    planSignal = signal<FeWorkoutPlan | null>(null);
 
     constructor(private service: WorkoutService) {}
 
     ngOnInit() {
-        this.service.startOrGetWorkout().subscribe(workout => this.workoutSignal.set(workout));
+        this.service.getTodayWorkoutPlan().subscribe(plan => this.planSignal.set(plan));
+
+        /*if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+
+        setInterval(() => {
+            new Notification(new Date());
+        }, 5000);*/
+    }
+
+    startExcercise(planExcerciseIndex: string, excerciseId: string) {
+        console.log('Start excercise' + planExcerciseIndex + excerciseId);
     }
 }

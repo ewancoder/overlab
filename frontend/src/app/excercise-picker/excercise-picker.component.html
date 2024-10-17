@@ -1,0 +1,6 @@
+<select #picker>
+  @for (excerciseId of excercise.excerciseIds; track $index) {
+    <option value="{{ excerciseId }}">{{ excerciseId }}</option>
+  }
+</select>
+<button (click)="pickExcercise()">Start</button>

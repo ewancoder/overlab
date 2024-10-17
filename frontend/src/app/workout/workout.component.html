@@ -1,3 +1,9 @@
-@if (workoutSignal(); as workout) {
-  {{ workout.startedAt }}
+@if (planSignal(); as plan) {
+  @for (excercise of plan.excercises; track excercise.id) {
+    <div>
+      <olab-excercise-picker
+        [excercise]="excercise"
+        (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
+    </div>
+  }
 }
