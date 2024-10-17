@@ -3,7 +3,7 @@ This documentation contains a full list of actions for creating this project.
 1. `ng new overlab`
 2. Change `prefix` in `angular.json` to `olab`, change prefix in templates: `app.component.ts`, `index.html`
 3. Copy `prettierrc.json` from other projects (install Prettier VS Code extension if not installed and configure formatter to use it by default)
-4. Install Prettier: `npm install prettier -D`
+4. Install Prettier: `npm install prettier -D` // I need this, otherwise it doesn't recognize angular templates.
 5. Go through all files in `src`, remove content from thml, rename css to scss & update ts to point to it, remove spec test file
 6. Enable zoneless change detection (follow Angular guide)
 - `npm uninstall zone.js`
