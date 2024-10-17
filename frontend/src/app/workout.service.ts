@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { FeWorkoutPlan } from './models';
+import { delay, Observable, of } from 'rxjs';
+import { Excercise, ExcerciseType, FeWorkoutPlan, MuscleGroupImpact } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
@@ -43,5 +43,27 @@ export class WorkoutService {
                 }
             ]
         });
+    }
+
+    public startExcercise(): Observable<Excercise> {
+        const excercise: Excercise = {
+            id: 'deadlift',
+            name: 'Deadlift',
+            description: "Big ol' deadlift",
+            category: 'back',
+            muscleGroups: [
+                { typeId: 'back-muscle', impact: MuscleGroupImpact.Primary },
+                { typeId: 'legs', impact: MuscleGroupImpact.Primary },
+                { typeId: 'forearm', impact: MuscleGroupImpact.Secondary },
+                { typeId: 'toes', impact: MuscleGroupImpact.Minimal }
+            ],
+            progressHistory: [
+                { date: new Date(), reps: [10, 8, 7, 4], weight: 105 },
+                { date: new Date(), reps: [9, 6, 5, 5], weight: 110 }
+            ],
+            type: ExcerciseType.BigCompound
+        };
+
+        return of(excercise).pipe(delay(200));
     }
 }

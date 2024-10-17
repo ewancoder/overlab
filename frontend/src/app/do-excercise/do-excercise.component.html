@@ -1,0 +1,19 @@
+@if (excercise(); as excercise) {
+  <div>{{ excercise.name }}</div>
+  <div>{{ excercise.description }}</div>
+  <div>Category: {{ excercise.category }}</div>
+  <div>Type: {{ excercise.type }}</div>
+  @for (muscleGroup of excercise.muscleGroups; track $index) {
+    <div>{{ muscleGroup.typeId }}, impact {{ muscleGroup.impact }}</div>
+  }
+  @for (progress of excercise.progressHistory; track $index) {
+    <div>
+      {{ progress.date | date }} - {{ progress.weight }}kg
+      @for (rep of progress.reps; track $index) {
+        {{ rep }}
+      }
+    </div>
+  }
+} @else {
+  <button (click)="start()">Start</button>
+}

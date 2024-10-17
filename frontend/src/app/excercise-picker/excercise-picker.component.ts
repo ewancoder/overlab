@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { FeExcercise } from '../models';
+import { FeWorkoutPlanExcercise } from '../models';
 
 @Component({
     selector: 'olab-excercise-picker',
@@ -10,7 +10,7 @@ import { FeExcercise } from '../models';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ExcercisePickerComponent {
-    @Input({ required: true }) excercise!: FeExcercise;
+    @Input({ required: true }) excercise!: FeWorkoutPlanExcercise;
     @ViewChild('picker') picker!: ElementRef<HTMLSelectElement>;
     @Output() excercisePicked = new EventEmitter<string>();
 

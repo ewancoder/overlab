@@ -76,11 +76,11 @@ export interface FeWorkoutPlan {
     // Plus they will be shuffled in specific way:
     // 1. To make sure I give the same muscle group a rest
     // 2. Based on custom rules (like RDL before Pullups, and not straight one after another - needs a rest)
-    excercises: FeExcercise[];
+    excercises: FeWorkoutPlanExcercise[];
 }
 
 // Generated based on mandatory focus & rest categories, and mandatory excercises.
-export interface FeExcercise {
+export interface FeWorkoutPlanExcercise {
     id: string; // Unique index of an item in this plan. Used to mark selected excercises.
     excerciseIds: string[]; // Contains a list of all possible excercises variations I can choose from.
 }

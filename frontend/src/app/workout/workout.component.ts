@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ExcercisePickerComponent } from '../excercise-picker/excercise-picker.component';
 import { FeWorkoutPlan } from '../models';
 import { WorkoutService } from '../workout.service';
@@ -17,7 +18,10 @@ import { WorkoutService } from '../workout.service';
 export class WorkoutComponent implements OnInit {
     planSignal = signal<FeWorkoutPlan | null>(null);
 
-    constructor(private service: WorkoutService) {}
+    constructor(
+        private service: WorkoutService,
+        private router: Router
+    ) {}
 
     ngOnInit() {
         this.service.getTodayWorkoutPlan().subscribe(plan => this.planSignal.set(plan));
@@ -32,6 +36,7 @@ export class WorkoutComponent implements OnInit {
     }
 
     startExcercise(planExcerciseIndex: string, excerciseId: string) {
-        console.log('Start excercise' + planExcerciseIndex + excerciseId);
+        // Just redirect. The 'DO' component will update api with start / cancel / finish / update events.
+        this.router.navigate(['/workout', planExcerciseIndex, excerciseId]);
     }
 }
