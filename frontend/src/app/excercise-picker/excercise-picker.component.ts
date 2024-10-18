@@ -11,10 +11,15 @@ import { FeWorkoutPlanExcercise } from '../models';
 })
 export class ExcercisePickerComponent {
     @Input({ required: true }) excercise!: FeWorkoutPlanExcercise;
+    @Input({ required: true }) performedExcerciseIds!: string[];
     @ViewChild('picker') picker!: ElementRef<HTMLSelectElement>;
     @Output() excercisePicked = new EventEmitter<string>();
 
     pickExcercise() {
         this.excercisePicked.emit(this.picker.nativeElement.value);
+    }
+
+    wasExcercisePerformed(excerciseId: string) {
+        return this.performedExcerciseIds.indexOf(excerciseId) >= 0;
     }
 }

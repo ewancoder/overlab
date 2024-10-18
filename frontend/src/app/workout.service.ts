@@ -21,7 +21,8 @@ export class WorkoutService {
                         'unilateral-cable-row',
                         'machine-row',
                         'lat-prayer'
-                    ]
+                    ],
+                    performedExcerciseId: 'machine-row'
                 },
                 {
                     id: '4',
@@ -42,7 +43,7 @@ export class WorkoutService {
                     excerciseIds: ['incline-db-biceps-curl', 'standing-db-biceps-curl']
                 }
             ]
-        });
+        }).pipe(delay(200));
     }
 
     // Should create a record of current excercise with the start Date.

@@ -2,6 +2,7 @@
   @for (excercise of plan.excercises; track excercise.id) {
     <div>
       <olab-excercise-picker
+        [performedExcerciseIds]="getPerformedExcercises(plan)"
         [excercise]="excercise"
         (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
     </div>

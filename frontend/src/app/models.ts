@@ -90,6 +90,7 @@ export interface FeWorkoutPlan {
 export interface FeWorkoutPlanExcercise {
     id: string; // Unique index of an item in this plan. Used to mark selected excercises.
     excerciseIds: string[]; // Contains a list of all possible excercises variations I can choose from.
+    performedExcerciseId?: string;
 }
 
 // I will load ALL possible excercises into memory from API, and just serve them by IDs.

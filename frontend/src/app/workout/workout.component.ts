@@ -39,4 +39,8 @@ export class WorkoutComponent implements OnInit {
         // Just redirect. The 'DO' component will update api with start / cancel / finish / update events.
         this.router.navigate(['/workout', planExcerciseIndex, excerciseId]);
     }
+
+    getPerformedExcercises(plan: FeWorkoutPlan): string[] {
+        return plan.excercises.map(excercise => excercise.performedExcerciseId!).filter(x => x);
+    }
 }
