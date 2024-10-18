@@ -29,7 +29,9 @@ export class WorkoutComponent implements OnInit {
 
     ngOnInit() {
         this.service.getTodayWorkoutPlan().subscribe(plan => {
-            this.timerSignal.set(this.service.createStopwatch(plan.startedAt));
+            if (plan.startedAt) {
+                this.timerSignal.set(this.service.createStopwatch(plan.startedAt));
+            }
             if (plan.lastExcerciseFinishedAt) {
                 this.restTimerSignal.set(this.service.createStopwatch(plan.lastExcerciseFinishedAt));
             }

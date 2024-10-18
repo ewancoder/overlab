@@ -75,7 +75,7 @@ export enum MuscleGroupImpact {
 
 export interface FeWorkoutPlan {
     id: string;
-    startedAt: Date;
+    startedAt?: Date;
     lastExcerciseFinishedAt?: Date;
 
     // Generated list of generated excercises for today, but can be removed & can be added more.
