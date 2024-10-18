@@ -16,3 +16,4 @@ This documentation contains a full list of actions for creating this project.
 12. Add `withComponentInputBinding()` to router
 13. Add eslint: `ng add @angular-eslint/schematics --skip-confirmation`
 14. Add `provideHttpClient()` to providers
+15. Add README and LICENSE file if not added yet, to the root of the repository
