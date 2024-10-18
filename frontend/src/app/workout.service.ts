@@ -58,8 +58,8 @@ export class WorkoutService {
                 { typeId: 'toes', impact: MuscleGroupImpact.Minimal }
             ],
             progressHistory: [
-                { date: new Date(), reps: [10, 8, 7, 4], weight: 105 },
-                { date: new Date(), reps: [9, 6, 5, 5], weight: 110 }
+                { date: new Date(), weight: 105, sets: [{ reps: '5*' }, { reps: '3*+2' }, { weight: 80, reps: '5*' }] },
+                { date: new Date(), weight: 110, sets: [{ reps: '6*' }, { reps: '4*+2' }, { weight: 80, reps: '9' }] }
             ],
             type: ExcerciseType.BigCompound
         };

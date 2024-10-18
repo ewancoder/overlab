@@ -9,8 +9,8 @@
   @for (progress of excercise.progressHistory; track $index) {
     <div>
       {{ progress.date | date }} - {{ progress.weight }}kg
-      @for (rep of progress.reps; track $index) {
-        {{ rep }}
+      @for (set of progress.sets; track $index) {
+        {{ set.weight ? set.weight + 'kg' : '' }} {{ set.reps }}
       }
     </div>
   }
