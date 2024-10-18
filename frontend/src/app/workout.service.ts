@@ -94,4 +94,9 @@ export class WorkoutService {
 
         return of([set]).pipe(delay(2000));
     }
+
+    public finishExcercise(): Observable<boolean> {
+        // TODO: Record finish excercise date.
+        return of(true).pipe(delay(2000));
+    }
 }

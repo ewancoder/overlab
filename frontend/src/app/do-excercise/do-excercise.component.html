@@ -24,6 +24,8 @@
   @for (set of currentSetsSignal(); track $index) {
     <div>{{ set.weight }}kg {{ set.reps }}</div>
   }
+
+  <button (click)="finishExcercise()">Finish excercise</button>
 } @else {
-  <button (click)="start()">Start</button>
+  <button (click)="startExcercise()">Start</button>
 }

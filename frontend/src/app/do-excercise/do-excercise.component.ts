@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, OnInit, signal, WritableSignal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Excercise, Set } from '../models';
 import { WorkoutService } from '../workout.service';
 
@@ -23,13 +24,16 @@ export class DoExcerciseComponent implements OnInit {
         reps: new FormControl('', Validators.required)
     });
 
-    constructor(private service: WorkoutService) {}
+    constructor(
+        private service: WorkoutService,
+        private router: Router
+    ) {}
 
     ngOnInit() {
         console.log(this.workoutExcerciseIndex + this.excerciseId);
     }
 
-    start() {
+    startExcercise() {
         this.service.startExcercise().subscribe(excercise => this.excercise.set(excercise));
     }
 
@@ -40,5 +44,9 @@ export class DoExcerciseComponent implements OnInit {
                 this.currentSetsSignal.set(currentSets);
                 this.addSetForm.controls.reps.reset();
             });
+    }
+
+    finishExcercise() {
+        this.service.finishExcercise().subscribe(() => this.router.navigate(['/workout']));
     }
 }
