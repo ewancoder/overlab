@@ -1,15 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { delay, Observable, of } from 'rxjs';
+import { delay, interval, map, Observable, of } from 'rxjs';
 import { Excercise, ExcerciseType, FeWorkoutPlan, MuscleGroupImpact, Set as WorkoutSet } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
     constructor(private http: HttpClient) {}
 
+    // TODO: Move this method to service-agnostic file.
+    public createStopwatch(dateFrom: Date) {
+        return interval(1000).pipe(map(() => new Date(new Date().getTime() - dateFrom.getTime()).toISOString().slice(11, 19)));
+    }
+
     public getTodayWorkoutPlan(): Observable<FeWorkoutPlan> {
         return of({
             id: 'full-body-3',
+            startedAt: new Date() /* Should get it by taking the start time of the first excercise. */,
+            lastExcerciseFinishedAt: new Date(),
             excercises: [
                 { id: '1', excerciseIds: ['deadlift'] },
                 { id: '2', excerciseIds: ['high-to-low-cable-fly'] },

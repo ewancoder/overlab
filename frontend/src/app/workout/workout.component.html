@@ -1,3 +1,9 @@
+<div>
+  {{ timerSignal() | async }}
+</div>
+<div>
+  {{ restTimerSignal() | async }}
+</div>
 @if (planSignal(); as plan) {
   @for (excercise of plan.excercises; track excercise.id) {
     <div>
