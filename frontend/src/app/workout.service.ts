@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { delay, Observable, of } from 'rxjs';
-import { Excercise, ExcerciseType, FeWorkoutPlan, MuscleGroupImpact } from './models';
+import { Excercise, ExcerciseType, FeWorkoutPlan, MuscleGroupImpact, Set as WorkoutSet } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
@@ -45,6 +45,7 @@ export class WorkoutService {
         });
     }
 
+    // Should create a record of current excercise with the start Date.
     public startExcercise(): Observable<Excercise> {
         const excercise: Excercise = {
             id: 'deadlift',
@@ -58,12 +59,39 @@ export class WorkoutService {
                 { typeId: 'toes', impact: MuscleGroupImpact.Minimal }
             ],
             progressHistory: [
-                { date: new Date(), weight: 105, sets: [{ reps: '5*' }, { reps: '3*+2' }, { weight: 80, reps: '5*' }] },
-                { date: new Date(), weight: 110, sets: [{ reps: '6*' }, { reps: '4*+2' }, { weight: 80, reps: '9' }] }
+                {
+                    date: new Date(),
+                    weight: 105,
+                    sets: [
+                        { date: new Date(), reps: '5*' },
+                        { date: new Date(), reps: '3*+2' },
+                        { date: new Date(), weight: 80, reps: '5*' }
+                    ]
+                },
+                {
+                    date: new Date(),
+                    weight: 110,
+                    sets: [
+                        { date: new Date(), reps: '6*' },
+                        { date: new Date(), reps: '4*+2' },
+                        { date: new Date(), weight: 80, reps: '9' }
+                    ]
+                }
             ],
             type: ExcerciseType.BigCompound
         };
 
         return of(excercise).pipe(delay(200));
+    }
+
+    // Adds a new set to the current excercise, and returns currently done list of sets (to not lose sync with the server).
+    public addSet(weight: number, reps: string): Observable<WorkoutSet[]> {
+        const set: WorkoutSet = {
+            date: new Date(),
+            weight: weight,
+            reps: reps
+        };
+
+        return of([set]).pipe(delay(2000));
     }
 }

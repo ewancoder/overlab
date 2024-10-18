@@ -14,6 +14,16 @@
       }
     </div>
   }
+
+  <form [formGroup]="addSetForm" (ngSubmit)="addSet()">
+    <input type="number" formControlName="weight" />
+    <input type="text" formControlName="reps" />
+    <button type="submit" [disabled]="!addSetForm.valid">Add set</button>
+  </form>
+
+  @for (set of currentSetsSignal(); track $index) {
+    <div>{{ set.weight }}kg {{ set.reps }}</div>
+  }
 } @else {
   <button (click)="start()">Start</button>
 }

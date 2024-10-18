@@ -40,6 +40,7 @@ export interface ExcerciseProgress {
 }
 
 export interface Set {
+    date: Date;
     weight?: number; // Overrides the weight set for the ExcerciseProgress.
     reps: string /* A pattern of reps: 5 means 5 lifts, 5* means 10 lifts with every 2nd one as partial, 5+3 means 5 regular lifts and 3 partial. */;
     // TODO: Alternative pattern: 20kg5+3, means 20kg overrides the weight set for the set, 5+3 is like above.
