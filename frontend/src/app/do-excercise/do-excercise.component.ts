@@ -36,7 +36,9 @@ export class DoExcerciseComponent implements OnInit {
     }
 
     startExcercise() {
-        this.service.startExcercise().subscribe(excercise => this.excercise.set(excercise));
+        this.service
+            .startExcercise(this.workoutExcerciseIndex, this.excerciseId)
+            .subscribe(excercise => this.excercise.set(excercise));
     }
 
     addSet() {

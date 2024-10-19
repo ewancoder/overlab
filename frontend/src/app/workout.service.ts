@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { delay, interval, map, Observable, of } from 'rxjs';
-import { Excercise, ExcerciseType, FeWorkoutPlan, MuscleGroupImpact, Set as WorkoutSet } from './models';
+import { delay, interval, map, Observable } from 'rxjs';
+import { Excercise, FeWorkoutPlan, Set as WorkoutSet } from './models';
+
+const apiUri = 'http://localhost:5000/api';
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
@@ -13,98 +15,50 @@ export class WorkoutService {
     }
 
     public getTodayWorkoutPlan(): Observable<FeWorkoutPlan> {
-        return of({
-            id: 'full-body-3',
-            startedAt: new Date() /* Should get it by taking the start time of the first excercise. */,
-            lastExcerciseFinishedAt: new Date(),
-            excercises: [
-                { id: '1', excerciseIds: ['deadlift'] },
-                { id: '2', excerciseIds: ['high-to-low-cable-fly'] },
-                {
-                    id: '3',
-                    excerciseIds: [
-                        'chest-supported-row',
-                        'unilateral-db-row',
-                        'unilateral-cable-row',
-                        'machine-row',
-                        'lat-prayer'
-                    ],
-                    performedExcerciseId: 'machine-row'
-                },
-                {
-                    id: '4',
-                    excerciseIds: ['skull-crusher', 'unilateral-upright-cable-tricep-kickback', 'overhead-cable-tricep-extension']
-                },
-                {
-                    id: '5',
-                    excerciseIds: [
-                        'chest-supported-row',
-                        'unilateral-db-row',
-                        'unilateral-cable-row',
-                        'machine-row',
-                        'lat-prayer'
-                    ]
-                },
-                {
-                    id: '6',
-                    excerciseIds: ['incline-db-biceps-curl', 'standing-db-biceps-curl']
-                }
-            ]
-        }).pipe(delay(200));
+        return this.http.get<FeWorkoutPlan>(`${apiUri}/workout/plan`).pipe(map(this.planWithDates), delay(200));
     }
 
     // Should create a record of current excercise with the start Date.
-    public startExcercise(): Observable<Excercise> {
-        const excercise: Excercise = {
-            id: 'deadlift',
-            name: 'Deadlift',
-            description: "Big ol' deadlift",
-            category: 'back',
-            muscleGroups: [
-                { typeId: 'back-muscle', impact: MuscleGroupImpact.Primary },
-                { typeId: 'legs', impact: MuscleGroupImpact.Primary },
-                { typeId: 'forearm', impact: MuscleGroupImpact.Secondary },
-                { typeId: 'toes', impact: MuscleGroupImpact.Minimal }
-            ],
-            progressHistory: [
-                {
-                    date: new Date(),
-                    weight: 105,
-                    sets: [
-                        { date: new Date(), reps: '5*' },
-                        { date: new Date(), reps: '3*+2' },
-                        { date: new Date(), weight: 80, reps: '5*' }
-                    ]
-                },
-                {
-                    date: new Date(),
-                    weight: 110,
-                    sets: [
-                        { date: new Date(), reps: '6*' },
-                        { date: new Date(), reps: '4*+2' },
-                        { date: new Date(), weight: 80, reps: '9' }
-                    ]
-                }
-            ],
-            type: ExcerciseType.BigCompound
-        };
-
-        return of(excercise).pipe(delay(200));
+    public startExcercise(workoutExcerciseIndex: string, excerciseId: string): Observable<Excercise> {
+        return this.http
+            .post<Excercise>(`${apiUri}/workout/excercise`, { workoutExcerciseIndex, excerciseId })
+            .pipe(map(this.excerciseWithDates), delay(200));
     }
 
     // Adds a new set to the current excercise, and returns currently done list of sets (to not lose sync with the server).
     public addSet(weight: number, reps: string): Observable<WorkoutSet[]> {
-        const set: WorkoutSet = {
-            date: new Date(),
-            weight: weight,
-            reps: reps
-        };
-
-        return of([set]).pipe(delay(2000));
+        return this.http.post<WorkoutSet[]>(`${apiUri}/workout/sets`, { weight, reps }).pipe(map(this.setsWithDates), delay(200));
     }
 
     public finishExcercise(): Observable<boolean> {
-        // TODO: Record finish excercise date.
-        return of(true).pipe(delay(2000));
+        return this.http.post<boolean>(`${apiUri}/workout/excercise/finish`, {}).pipe(delay(200));
+    }
+
+    private planWithDates(plan: FeWorkoutPlan): FeWorkoutPlan {
+        if (plan.startedAt) {
+            plan.startedAt = new Date(plan.startedAt);
+        }
+
+        if (plan.lastExcerciseFinishedAt) {
+            plan.lastExcerciseFinishedAt = new Date(plan.lastExcerciseFinishedAt);
+        }
+
+        return plan;
+    }
+
+    private setsWithDates(sets: WorkoutSet[]): WorkoutSet[] {
+        for (const set of sets) {
+            set.date = new Date(set.date);
+        }
+
+        return sets;
+    }
+
+    private excerciseWithDates(excercise: Excercise): Excercise {
+        for (const hist of excercise.progressHistory) {
+            hist.date = new Date(hist.date);
+        }
+
+        return excercise;
     }
 }
