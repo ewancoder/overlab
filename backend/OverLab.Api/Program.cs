@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using OverLab.Api;
+
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(o =>
 {
     o.AddPolicy(name: "cors", policy =>
@@ -9,6 +11,10 @@ builder.Services.AddCors(o =>
             .WithHeaders("Authorization", "Content-Type");
     });
 });
+
+var connectionString = builder.Configuration["DbConnectionString"]
+    ?? throw new InvalidOperationException("Could not get connection string for the database.");
+builder.Services.AddOverLabDbContext(connectionString);
 
 var app = builder.Build();
 app.UseCors("cors");

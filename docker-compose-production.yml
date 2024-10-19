@@ -1,0 +1,27 @@
+version: "3.8"
+
+networks:
+  default:
+    name: typingrealm
+    external: true
+
+services:
+  overlab-api:
+    image: ghcr.io/ewancoder/overlab-api:main
+    container_name: overlab-api
+    restart: unless-stopped
+    mem_limit: 1g
+    mem_reservation: 750m
+    env_file:
+      - /data/overlab/secrets.env
+
+  overlab-postgres:
+    image: postgres:17
+    container_name: overlab-postgres
+    volumes:
+      - /data/overlab/postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+    mem_limit: 1g
+    mem_reservation: 750m
+    env_file:
+      - /data/overlab/secrets.env
