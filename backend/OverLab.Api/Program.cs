@@ -26,38 +26,39 @@ Excercise? currentExcercise = null;
 
 app.MapGet("/diag", () => DateTime.UtcNow);
 
-app.MapGet("/api/workout/plan", () =>
+app.MapGet("/api/plans", () =>
 {
     startedAt ??= DateTime.UtcNow;
 
-    return new WorkoutPlan(
-        "full-body-3",
-        startedAt,
-        lastExcerciseFinishedAt,
-        [
-            new("1", [ "deadlift" ]),
-            new("2", [ "high-to-low-cable-fly" ]),
-            new("3", [
-                "chest-supported-row",
-                "unilateral-db-row",
-                "unilateral-cable-row",
-                "machine-row",
-                "lat-prayer"
-            ], "machine-row"),
-            new("4", [
-                "skull-crusher",
-                "unilateral-upright-cable-tricep-kickback",
-                "overhead-cable-tricep-extension"
-            ]),
-            new("5", [
-                "chest-supported-row",
-                "unilateral-db-row",
-                "unilateral-cable-row",
-                "machine-row",
-                "lat-prayer"
-            ]),
-            new("6", [ "incline-db-biceps-curl", "standing-db-biceps-curl" ])
-        ]);
+    return
+        new WorkoutPlan(
+            "full-body-3",
+            startedAt,
+            lastExcerciseFinishedAt,
+            [
+                new("1", [ "deadlift" ]),
+                new("2", [ "high-to-low-cable-fly" ]),
+                new("3", [
+                    "chest-supported-row",
+                    "unilateral-db-row",
+                    "unilateral-cable-row",
+                    "machine-row",
+                    "lat-prayer"
+                ], "machine-row"),
+                new("4", [
+                    "skull-crusher",
+                    "unilateral-upright-cable-tricep-kickback",
+                    "overhead-cable-tricep-extension"
+                ]),
+                new("5", [
+                    "chest-supported-row",
+                    "unilateral-db-row",
+                    "unilateral-cable-row",
+                    "machine-row",
+                    "lat-prayer"
+                ]),
+                new("6", [ "incline-db-biceps-curl", "standing-db-biceps-curl" ])
+            ]);
 });
 
 app.MapPost("/api/workout/sets", (AddSet addSet) =>
