@@ -43,6 +43,8 @@ public sealed class Workout
 
     public ICollection<WorkoutExercise> WorkoutExercises { get; } = [];
 
+    public required DateTime StartedAtUtc { get; set; }
+
     public required bool IsCanceled { get; set; }
 
     public string? Notes { get; set; }
@@ -50,7 +52,7 @@ public sealed class Workout
 
 public sealed class ExercisePlan
 {
-    public required long Id { get; set; }
+    public long Id { get; set; }
 
     public required int OrderPosition { get; set; }
 
@@ -72,8 +74,8 @@ public sealed class WorkoutExercise
 
     public required bool IsFinished { get; set; }
 
-    public required Exercise Exercise { get; set; }
-    public required string ExerciseId { get; set; }
+    public Exercise? Exercise { get; set; }
+    public string? ExerciseId { get; set; }
 
     public required Workout Workout { get; set; }
     public required string WorkoutId { get; set; }

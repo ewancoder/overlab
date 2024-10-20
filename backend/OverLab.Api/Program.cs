@@ -1,4 +1,6 @@
-﻿using OverLab.Api;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OverLab.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(o =>
@@ -19,79 +21,154 @@ builder.Services.AddOverLabDbContext(connectionString);
 var app = builder.Build();
 app.UseCors("cors");
 
-DateTime? startedAt = null;
-DateTime? lastExcerciseFinishedAt = null;
-List<Set> sets = [];
-Excercise? currentExcercise = null;
+var plans = new[]
+{
+    new
+    {
+        Id = "full-body-3-3",
+        Name = "3 day full body, day 3",
+        Description = "The third day of a 3 day full body workout plan.",
+        Exercises = new[]
+        {
+            ["deadlift"],
+            ["high-to-low-cable-fly"],
+            ["chest-supported-row", "unilateral-db-row"],
+            ["skull-crusher"],
+            new[] { "chest-supported-row", "unilateral-db-row" }
+        }
+    },
+    new
+    {
+        Id = "full-body-3-1",
+        Name = "3 day full body, day 1",
+        Description = "The first day of a 3 day full body workout plan.",
+        Exercises = new[]
+        {
+            new[] { "bench-press" },
+            ["high-to-low-cable-fly"],
+            ["skull-crusher"]
+        }
+    }
+};
 
 app.MapGet("/diag", () => DateTime.UtcNow);
 
-app.MapGet("/api/plans", () =>
-{
-    startedAt ??= DateTime.UtcNow;
+app.MapGet("/api/plans", () => plans);
 
-    return
-        new WorkoutPlan(
-            "full-body-3",
-            startedAt,
-            lastExcerciseFinishedAt,
-            [
-                new("1", [ "deadlift" ]),
-                new("2", [ "high-to-low-cable-fly" ]),
-                new("3", [
-                    "chest-supported-row",
-                    "unilateral-db-row",
-                    "unilateral-cable-row",
-                    "machine-row",
-                    "lat-prayer"
-                ], "machine-row"),
-                new("4", [
-                    "skull-crusher",
-                    "unilateral-upright-cable-tricep-kickback",
-                    "overhead-cable-tricep-extension"
-                ]),
-                new("5", [
-                    "chest-supported-row",
-                    "unilateral-db-row",
-                    "unilateral-cable-row",
-                    "machine-row",
-                    "lat-prayer"
-                ]),
-                new("6", [ "incline-db-biceps-curl", "standing-db-biceps-curl" ])
-            ]);
+app.MapGet("/api/plans/today", () => plans.FirstOrDefault(x => x.Id == "full-body-3-3"));
+
+app.MapPost("/api/plans/{planId}/start", async (string planId, [FromServices]OverLabDbContext context) =>
+{
+    var plan = plans.FirstOrDefault(p => p.Id == planId);
+    if (plan == null)
+        return Results.NotFound("Plan with such Id does not exist.");
+
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout != null)
+        return Results.BadRequest("Workout is already in progress.");
+
+    var workout = new Workout
+    {
+        Id = Guid.NewGuid().ToString(),
+        IsCanceled = false,
+        Notes = null,
+        StartedAtUtc = DateTime.UtcNow
+    };
+
+    var plannedExercises = plan.Exercises.Select(possibleExercises => possibleExercises.Select(e => new Exercise
+    {
+        Id = e,
+        Name = e,
+        Description = e
+    }));
+
+    var index = 1;
+    foreach (var planned in plannedExercises)
+    {
+        var localPlan = new ExercisePlan { OrderPosition = index++ };
+        foreach (var pe in planned)
+        {
+            localPlan.PossibleExercises.Add(pe);
+        }
+
+        workout.WorkoutExercises.Add(new WorkoutExercise
+        {
+            Id = Guid.NewGuid().ToString(),
+            ExercisePlan = localPlan,
+            ExercisePlanId = 0,
+            IsFinished = false,
+            Workout = workout,
+            WorkoutId = workout.Id
+        });
+    }
+
+    return Results.Ok(workout);
 });
 
-app.MapPost("/api/workout/sets", (AddSet addSet) =>
+app.MapPost("/api/workout/cancel", async ([FromServices]OverLabDbContext context) =>
 {
-    if (startedAt is null || currentExcercise is null)
-        return Results.BadRequest();
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
 
-    sets.Add(new(DateTime.UtcNow, addSet.Weight, addSet.Reps));
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
 
-    return Results.Ok(sets);
+    currentWorkout.IsCanceled = true;
+    await context.SaveChangesAsync();
+
+    return Results.Ok(currentWorkout);
 });
 
-app.MapPost("/api/workout/excercise", (StartExcercise startExcercise) =>
+app.MapPost("/api/workout/exercises/:workoutExerciseId/start/:excerciseId", async (StartExcercise startExcercise, [FromServices] OverLabDbContext context) =>
 {
-    currentExcercise ??= new Excercise(
-        "deadlift", "Deadlift", "Big ol' deadlift", "back", [
-            new("back-muscle", MuscleGroupImpact.Primary),
-            new("legs", MuscleGroupImpact.Primary),
-            new("forearm", MuscleGroupImpact.Secondary),
-            new("toes", MuscleGroupImpact.Minimal)
-        ], [
-            new(DateTime.UtcNow, 100, [ new(DateTime.UtcNow, 100, "5*+3")]),
-            new(DateTime.UtcNow, 100, [ new(DateTime.UtcNow, 100, "5*+3")]),
-            new(DateTime.UtcNow, 100, [ new(DateTime.UtcNow, 100, "5*+3")])
-        ], ExcerciseType.BigCompound);
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
 
-    return currentExcercise;
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
+
+    var currentExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.Id == startExcercise.WorkoutExerciseId && !e.IsFinished);
+    if (currentExercise == null)
+        return Results.BadRequest("No exercise found in this plan, or it has already been finished.");
+
+    var excercise = await context.Exercise.FindAsync(startExcercise.ExcerciseId);
+    if (excercise == null)
+        return Results.BadRequest("No such exercise.");
+
+    currentExercise.Exercise = excercise;
+    await context.SaveChangesAsync();
+
+    return Results.Ok(currentWorkout);
 });
 
-app.MapPost("/api/workout/excercise/finish", () =>
+app.MapPost("/api/workout/sets", async (AddSet addSet, [FromServices] OverLabDbContext context) =>
 {
-    currentExcercise = null;
-    lastExcerciseFinishedAt = DateTime.UtcNow;
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
+
+    var currentExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.ExerciseId != null && !e.IsFinished);
+    if (currentExercise == null)
+        return Results.BadRequest("No exercise in progress.");
+
+    currentExercise.Sets.Add(new WorkoutExerciseSet
+    {
+        Id = 0,
+        RecordedAtUtc = DateTime.UtcNow,
+        Reps = addSet.Reps,
+        Weight = addSet.Weight,
+        Notes = addSet.Notes,
+        WorkoutExercise = currentExercise,
+        WorkoutExerciseId = currentExercise.Id
+    });
+
+    await context.SaveChangesAsync();
+
+    return Results.Ok(currentWorkout);
 });
 
 await app.RunAsync();
@@ -107,9 +184,9 @@ public sealed record WorkoutPlanExcercise(
     IEnumerable<string> ExcerciseIds,
     string? PerformedExcerciseId = null);
 
-public sealed record AddSet(decimal Weight, string Reps);
+public sealed record AddSet(decimal Weight, string Reps, string Notes);
 public sealed record Set(DateTime Date, decimal Weight, string Reps);
-public sealed record StartExcercise(string WorkoutExcerciseIndex, string ExcerciseId);
+public sealed record StartExcercise(string WorkoutExerciseId, string ExcerciseId);
 public sealed record Excercise(
     string Id,
     string Name,
