@@ -28,26 +28,14 @@ var plans = new[]
         Id = "full-body-3-3",
         Name = "3 day full body, day 3",
         Description = "The third day of a 3 day full body workout plan.",
-        Exercises = new[]
-        {
-            ["deadlift"],
-            ["high-to-low-cable-fly"],
-            ["chest-supported-row", "unilateral-db-row"],
-            ["skull-crusher"],
-            new[] { "chest-supported-row", "unilateral-db-row" }
-        }
+        ExercisePlans = new[] { "deadlift", "chest", "all" }
     },
     new
     {
         Id = "full-body-3-1",
         Name = "3 day full body, day 1",
         Description = "The first day of a 3 day full body workout plan.",
-        Exercises = new[]
-        {
-            new[] { "bench-press" },
-            ["high-to-low-cable-fly"],
-            ["skull-crusher"]
-        }
+        ExercisePlans = new[] { "chest", "all" }
     }
 };
 
@@ -77,27 +65,21 @@ app.MapPost("/api/plans/{planId}/start", async (string planId, [FromServices]Ove
         StartedAtUtc = DateTime.UtcNow
     };
 
-    var plannedExercises = plan.Exercises.Select(possibleExercises => possibleExercises.Select(e => new Exercise
-    {
-        Id = e,
-        Name = e,
-        Description = e
-    }));
+    var plannedPlans = plan.ExercisePlans;
 
-    var index = 1;
-    foreach (var planned in plannedExercises)
+    foreach (var pi in plannedPlans)
     {
-        var localPlan = new ExercisePlan { OrderPosition = index++ };
-        foreach (var pe in planned)
-        {
-            localPlan.PossibleExercises.Add(pe);
-        }
+        // TODO: Do not create new Exercise plan here, get them by ExercisePlanId from the Plans.
+        // And store unique list of ExercisePlans.
+        var localPlan = await context.ExercisePlans.FirstOrDefaultAsync(p => p.Id == pi);
+        if (localPlan == null)
+            return Results.BadRequest("Did not find such exercise plan.");
 
         workout.WorkoutExercises.Add(new WorkoutExercise
         {
             Id = Guid.NewGuid().ToString(),
             ExercisePlan = localPlan,
-            ExercisePlanId = 0,
+            ExercisePlanId = pi,
             IsFinished = false,
             Workout = workout,
             WorkoutId = workout.Id
@@ -231,6 +213,53 @@ app.MapPost("/api/workout/exercises/cancel", async ([FromServices] OverLabDbCont
     return Results.Ok(currentExercise);
 });
 
+app.MapPost("/api/workout/exercises", async (AddExercise addExercise, [FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout is null)
+        return Results.BadRequest("No workout in progress.");
+
+    var exercisePlan = await context.ExercisePlans.FindAsync(addExercise.ExercisePlanId);
+    if (exercisePlan is null)
+        return Results.BadRequest("No such exercise plan found.");
+
+    var newExercise = new WorkoutExercise
+    {
+        Id = Guid.NewGuid().ToString(),
+        ExercisePlan = exercisePlan,
+        ExercisePlanId = exercisePlan.Id,
+        IsFinished = false,
+        Workout = currentWorkout,
+        WorkoutId = currentWorkout.Id
+    };
+    currentWorkout.WorkoutExercises.Add(newExercise);
+
+    await context.SaveChangesAsync();
+    return Results.Ok(newExercise);
+});
+
+app.MapDelete("/api/workout/exercises/{workoutExerciseId}", async (string workoutExerciseId, [FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout is null)
+        return Results.BadRequest("No workout in progress.");
+
+    var workoutExercise = currentWorkout.WorkoutExercises.FirstOrDefault(x => x.Id == workoutExerciseId);
+    if (workoutExercise is null)
+        return Results.BadRequest("Could not find this workout exercise.");
+
+    if (workoutExercise.Sets.Count > 0)
+        return Results.BadRequest("Cannot remove an exercise from workout that already has been performed.");
+
+    currentWorkout.WorkoutExercises.Remove(workoutExercise);
+    await context.SaveChangesAsync();
+    return Results.Ok(currentWorkout);
+});
+
 await app.RunAsync();
 
 public sealed record WorkoutPlan(
@@ -277,3 +306,4 @@ public sealed record ExcerciseProgress(
     IEnumerable<Set> Sets);
 public sealed record UpdateWorkoutExercise(string Notes);
 public sealed record UpdateWorkout(string Notes);
+public sealed record AddExercise(string ExercisePlanId);

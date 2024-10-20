@@ -2,6 +2,7 @@
 
 namespace OverLab.Api;
 
+// TODO: This will cause contention if I have multiple instances of the service.
 sealed file class MigrateDatabaseStartupFilter : IStartupFilter
 {
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
@@ -11,7 +12,68 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
             await using var scope = builder.ApplicationServices.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<OverLabDbContext>();
             await dbContext.Database.MigrateAsync();
+
+            await SeedDatabase(dbContext);
         };
+    }
+
+    private readonly Exercise[] _exercises = [
+        new Exercise
+        {
+            Id = "deadlift",
+            Name = "Deadlift",
+            Description = "Deadlift"
+        },
+        new Exercise
+        {
+            Id = "low-to-high-cable-fly",
+            Name = "Low to High Cable Fly",
+            Description = "Low to High Cable Fly"
+        }
+    ];
+
+    private sealed record ExercisePlanMapping(string Id, string[] ExerciseIds);
+    private readonly ExercisePlanMapping[] _exercisePlans = [
+        new ExercisePlanMapping("deadlift", ["deadlift"]),
+        new ExercisePlanMapping("chest", ["low-to-high-cable-fly"]),
+        new ExercisePlanMapping("all", ["low-to-high-cable-fly", "deadlift"])
+    ];
+
+    private async ValueTask SeedDatabase(OverLabDbContext context)
+    {
+        foreach (var exercise in _exercises)
+        {
+            var existing = await context.Exercise.FirstOrDefaultAsync(e => e.Id == "deadlift");
+            if (existing is null)
+                await context.Exercise.AddAsync(exercise);
+            else
+            {
+                existing.Name = exercise.Name;
+                existing.Description = exercise.Description;
+            }
+        }
+
+        foreach (var plan in _exercisePlans)
+        {
+            var existing = await context.ExercisePlans.FirstOrDefaultAsync(e => e.Id == plan.Id);
+            var exercises = await Task.WhenAll(
+                plan.ExerciseIds.Select(id => context.Exercise.FirstAsync(e => e.Id == id)));
+
+            if (existing is null)
+            {
+                var newPlan = new ExercisePlan { Id = plan.Id };
+                newPlan.PossibleExercises.AddRange(exercises);
+
+                await context.ExercisePlans.AddAsync(newPlan);
+            }
+            else
+            {
+                existing.PossibleExercises.Clear();
+                existing.PossibleExercises.AddRange(exercises);
+            }
+        }
+
+        await context.SaveChangesAsync();
     }
 }
 
@@ -35,6 +97,7 @@ public sealed class OverLabDbContext(DbContextOptions<OverLabDbContext> options)
     public required DbSet<Workout> Workout { get; set; }
     public required DbSet<Exercise> Exercise { get; set; }
     public required DbSet<WorkoutExercise> WorkoutExercise { get; set; }
+    public required DbSet<ExercisePlan> ExercisePlans { get; set; }
 }
 
 [Index(nameof(IsCanceled))]
@@ -51,14 +114,14 @@ public sealed class Workout
     public string? Notes { get; set; }
 }
 
+// There can be many exercise plans to pick from. When adding another plan to a workout, you select a plan, not a specific exercise.
+// Unless you select a specific exercise. Then first you create a new dynamic plan with just one exercise, and after it you add it to the workout.
 public sealed class ExercisePlan
 {
-    public long Id { get; set; }
-
-    public required int OrderPosition { get; set; }
+    public required string Id { get; set; }
 
     // Navigation property for many-to-many relationship.
-    public ICollection<Exercise> PossibleExercises { get; } = [];
+    public List<Exercise> PossibleExercises { get; } = [];
 }
 
 [Index(nameof(IsFinished))]
@@ -67,7 +130,7 @@ public sealed class WorkoutExercise
     public required string Id { get; set; }
 
     public required ExercisePlan ExercisePlan { get; set; }
-    public required long ExercisePlanId { get; set; }
+    public required string ExercisePlanId { get; set; }
 
     public string? Notes { get; set; }
 
