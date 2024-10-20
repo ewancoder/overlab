@@ -31,25 +31,20 @@ export class WorkoutComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.service.getCurrentWorkout().subscribe(
-            workout => {
-                this.currentWorkout.set(workout);
-                this.workoutTimerSignal.set(this.service.createStopwatch(workout.startedAtUtc));
-                const lastSetsOfFinishedExercises = workout.workoutExercises
-                    .filter(e => e.isFinished && e.sets.length > 0)
-                    .map(e => e.sets.at(-1)!.recordedAtUtc);
-                if (lastSetsOfFinishedExercises.length > 0) {
-                    const maxDate = new Date(Math.max(...lastSetsOfFinishedExercises.map(Number)));
-                    this.restTimerSignal.set(this.service.createStopwatch(maxDate));
-                }
-            },
-            error => {
-                if (error.status == 404) {
-                    this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlans.set(wps));
-                    this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanId.set(wp.id));
-                }
+        this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlans.set(wps));
+        this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanId.set(wp.id));
+
+        this.service.getCurrentWorkout().subscribe(workout => {
+            this.currentWorkout.set(workout);
+            this.workoutTimerSignal.set(this.service.createStopwatch(workout.startedAtUtc));
+            const lastSetsOfFinishedExercises = workout.workoutExercises
+                .filter(e => e.isFinished && e.sets.length > 0)
+                .map(e => e.sets.at(-1)!.recordedAtUtc);
+            if (lastSetsOfFinishedExercises.length > 0) {
+                const maxDate = new Date(Math.max(...lastSetsOfFinishedExercises.map(Number)));
+                this.restTimerSignal.set(this.service.createStopwatch(maxDate));
             }
-        );
+        });
     }
 
     startExcercise(planExcerciseIndex: string, excerciseId: string) {

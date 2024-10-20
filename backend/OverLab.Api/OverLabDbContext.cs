@@ -9,11 +9,21 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
     {
         return async builder =>
         {
-            await using var scope = builder.ApplicationServices.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<OverLabDbContext>();
-            await dbContext.Database.MigrateAsync();
+            // HACK: A workaround, otherwise endpoints don't start for some reason.
+            next(builder);
 
-            await SeedDatabase(dbContext);
+            {
+                await using var scope = builder.ApplicationServices.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<OverLabDbContext>();
+                await Task.Delay(10000);
+                await dbContext.Database.MigrateAsync();
+            }
+
+            {
+                await using var scope = builder.ApplicationServices.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<OverLabDbContext>();
+                await SeedDatabase(dbContext);
+            }
         };
     }
 
@@ -43,7 +53,7 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
     {
         foreach (var exercise in _exercises)
         {
-            var existing = await context.Exercise.FirstOrDefaultAsync(e => e.Id == "deadlift");
+            var existing = await context.Exercise.FirstOrDefaultAsync(e => e.Id == exercise.Id);
             if (existing is null)
                 await context.Exercise.AddAsync(exercise);
             else
@@ -53,11 +63,19 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
             }
         }
 
+        await context.SaveChangesAsync();
+
         foreach (var plan in _exercisePlans)
         {
-            var existing = await context.ExercisePlans.FirstOrDefaultAsync(e => e.Id == plan.Id);
-            var exercises = await Task.WhenAll(
-                plan.ExerciseIds.Select(id => context.Exercise.FirstAsync(e => e.Id == id)));
+            var existing = await context.ExercisePlans
+                .Include(ep => ep.PossibleExercises)
+                .FirstOrDefaultAsync(e => e.Id == plan.Id);
+            var exercises = new List<Exercise>();
+            foreach (var exerciseId in plan.ExerciseIds)
+            {
+                var exercise = await context.Exercise.FirstAsync(e => e.Id == exerciseId);
+                exercises.Add(exercise);
+            }
 
             if (existing is null)
             {

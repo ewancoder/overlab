@@ -288,14 +288,14 @@ public sealed record WorkoutPlanExcercise(
 public sealed record AddSet(decimal Weight, string Reps, string? Notes);
 public sealed record Set(DateTime Date, decimal Weight, string Reps);
 public sealed record StartExcercise(string WorkoutExerciseId, string ExcerciseId);
-public sealed record Excercise(
+/*public sealed record Excercise(
     string Id,
     string Name,
     string Description,
     string Category,
     IEnumerable<MuscleGroup> MuscleGroups,
     IEnumerable<ExcerciseProgress> ProgressHistory,
-    ExcerciseType Type);
+    ExcerciseType Type);*/
 public enum ExcerciseType
 {
     Unset = 0,
