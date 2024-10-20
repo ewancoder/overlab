@@ -25,16 +25,16 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "exercise_plan",
+            name: "exercise_plans",
             columns: table => new
             {
-                id = table.Column<long>(type: "bigint", nullable: false)
-                    .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                order_position = table.Column<int>(type: "integer", nullable: false)
+                id = table.Column<string>(type: "text", nullable: false),
+                name = table.Column<string>(type: "text", nullable: false),
+                description = table.Column<string>(type: "text", nullable: false)
             },
             constraints: table =>
             {
-                table.PrimaryKey("pk_exercise_plan", x => x.id);
+                table.PrimaryKey("pk_exercise_plans", x => x.id);
             });
 
         migrationBuilder.CreateTable(
@@ -42,6 +42,7 @@ public partial class Initial : Migration
             columns: table => new
             {
                 id = table.Column<string>(type: "text", nullable: false),
+                started_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 is_canceled = table.Column<bool>(type: "boolean", nullable: false),
                 notes = table.Column<string>(type: "text", nullable: true)
             },
@@ -54,16 +55,16 @@ public partial class Initial : Migration
             name: "exercise_exercise_plan",
             columns: table => new
             {
-                exercise_plans_id = table.Column<long>(type: "bigint", nullable: false),
+                exercise_plans_id = table.Column<string>(type: "text", nullable: false),
                 possible_exercises_id = table.Column<string>(type: "text", nullable: false)
             },
             constraints: table =>
             {
                 table.PrimaryKey("pk_exercise_exercise_plan", x => new { x.exercise_plans_id, x.possible_exercises_id });
                 table.ForeignKey(
-                    name: "fk_exercise_exercise_plan_exercise_plan_exercise_plans_id",
+                    name: "fk_exercise_exercise_plan_exercise_plans_exercise_plans_id",
                     column: x => x.exercise_plans_id,
-                    principalTable: "exercise_plan",
+                    principalTable: "exercise_plans",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
@@ -79,10 +80,10 @@ public partial class Initial : Migration
             columns: table => new
             {
                 id = table.Column<string>(type: "text", nullable: false),
-                exercise_plan_id = table.Column<long>(type: "bigint", nullable: false),
+                exercise_plan_id = table.Column<string>(type: "text", nullable: false),
                 notes = table.Column<string>(type: "text", nullable: true),
                 is_finished = table.Column<bool>(type: "boolean", nullable: false),
-                exercise_id = table.Column<string>(type: "text", nullable: false),
+                exercise_id = table.Column<string>(type: "text", nullable: true),
                 workout_id = table.Column<string>(type: "text", nullable: false)
             },
             constraints: table =>
@@ -92,12 +93,11 @@ public partial class Initial : Migration
                     name: "fk_workout_exercise_exercise_exercise_id",
                     column: x => x.exercise_id,
                     principalTable: "exercise",
-                    principalColumn: "id",
-                    onDelete: ReferentialAction.Cascade);
+                    principalColumn: "id");
                 table.ForeignKey(
-                    name: "fk_workout_exercise_exercise_plan_exercise_plan_id",
+                    name: "fk_workout_exercise_exercise_plans_exercise_plan_id",
                     column: x => x.exercise_plan_id,
-                    principalTable: "exercise_plan",
+                    principalTable: "exercise_plans",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
@@ -188,7 +188,7 @@ public partial class Initial : Migration
             name: "exercise");
 
         migrationBuilder.DropTable(
-            name: "exercise_plan");
+            name: "exercise_plans");
 
         migrationBuilder.DropTable(
             name: "workout");

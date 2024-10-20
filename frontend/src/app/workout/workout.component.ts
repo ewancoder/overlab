@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/cor
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { ExcercisePickerComponent } from '../excercise-picker/excercise-picker.component';
-import { FeWorkoutPlan } from '../models';
+import { NgWorkout, NgWorkoutPlan } from '../models';
 import { WorkoutService } from '../workout.service';
 
 /// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,9 +18,12 @@ import { WorkoutService } from '../workout.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkoutComponent implements OnInit {
-    planSignal = signal<FeWorkoutPlan | null>(null);
-    timerSignal = signal<Observable<string> | undefined>(undefined);
+    workoutTimerSignal = signal<Observable<string> | undefined>(undefined);
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
+
+    currentWorkout = signal<NgWorkout | null>(null);
+    allWorkoutPlans = signal<NgWorkoutPlan[]>([]);
+    todayWorkoutPlanId = signal<string | null>(null);
 
     constructor(
         private service: WorkoutService,
@@ -28,23 +31,25 @@ export class WorkoutComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.service.getTodayWorkoutPlan().subscribe(plan => {
-            if (plan.startedAt) {
-                this.timerSignal.set(this.service.createStopwatch(plan.startedAt));
+        this.service.getCurrentWorkout().subscribe(
+            workout => {
+                this.currentWorkout.set(workout);
+                this.workoutTimerSignal.set(this.service.createStopwatch(workout.startedAtUtc));
+                const lastSetsOfFinishedExercises = workout.workoutExercises
+                    .filter(e => e.isFinished && e.sets.length > 0)
+                    .map(e => e.sets.at(-1)!.recordedAtUtc);
+                if (lastSetsOfFinishedExercises.length > 0) {
+                    const maxDate = new Date(Math.max(...lastSetsOfFinishedExercises.map(Number)));
+                    this.restTimerSignal.set(this.service.createStopwatch(maxDate));
+                }
+            },
+            error => {
+                if (error.status == 404) {
+                    this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlans.set(wps));
+                    this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanId.set(wp.id));
+                }
             }
-            if (plan.lastExcerciseFinishedAt) {
-                this.restTimerSignal.set(this.service.createStopwatch(plan.lastExcerciseFinishedAt));
-            }
-            this.planSignal.set(plan);
-        });
-
-        /*if (Notification.permission !== 'granted') {
-            Notification.requestPermission();
-        }
-
-        setInterval(() => {
-            new Notification(new Date());
-        }, 5000);*/
+        );
     }
 
     startExcercise(planExcerciseIndex: string, excerciseId: string) {
@@ -52,7 +57,7 @@ export class WorkoutComponent implements OnInit {
         this.router.navigate(['/workout', planExcerciseIndex, excerciseId]);
     }
 
-    getPerformedExcercises(plan: FeWorkoutPlan): string[] {
-        return plan.excercises.map(excercise => excercise.performedExcerciseId!).filter(x => x);
+    getPerformedExcercises(workout: NgWorkout): string[] {
+        return workout.workoutExercises.map(excercise => excercise.exerciseId!).filter(x => x);
     }
 }

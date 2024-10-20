@@ -12,8 +12,8 @@ using OverLab.Api;
 namespace OverLab.Api.Migrations
 {
     [DbContext(typeof(OverLabDbContext))]
-    [Migration("20241020143709_TweakModel3")]
-    partial class TweakModel3
+    [Migration("20241020154044_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

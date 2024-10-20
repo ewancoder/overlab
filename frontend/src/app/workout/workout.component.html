@@ -1,14 +1,14 @@
 <div>
-  {{ timerSignal() | async }}
+  {{ workoutTimerSignal() | async }}
 </div>
 <div>
   {{ restTimerSignal() | async }}
 </div>
-@if (planSignal(); as plan) {
-  @for (excercise of plan.excercises; track excercise.id) {
+@if (currentWorkout(); as workout) {
+  @for (excercise of workout.workoutExercises; track excercise.id) {
     <div>
       <olab-excercise-picker
-        [performedExcerciseIds]="getPerformedExcercises(plan)"
+        [performedExcerciseIds]="getPerformedExcercises(workout)"
         [excercise]="excercise"
         (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
     </div>

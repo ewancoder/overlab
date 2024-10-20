@@ -1,11 +1,11 @@
-<select #picker [disabled]="excercise.performedExcerciseId">
-  @for (excerciseId of excercise.excerciseIds; track $index) {
+<select #picker [disabled]="excercise.exerciseId">
+  @for (excerciseId of exercisePlanSignal()?.exercises; track $index) {
     <option
       [disabled]="wasExcercisePerformed(excerciseId)"
-      [selected]="excercise.performedExcerciseId === excerciseId"
+      [selected]="excercise.exerciseId === excerciseId"
       value="{{ excerciseId }}">
       {{ excerciseId }}
     </option>
   }
 </select>
-<button [disabled]="excercise.performedExcerciseId" (click)="pickExcercise()">Start</button>
+<button [disabled]="excercise.exerciseId" (click)="pickExcercise()">Start</button>
