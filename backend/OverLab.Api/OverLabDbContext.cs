@@ -34,6 +34,7 @@ public sealed class OverLabDbContext(DbContextOptions<OverLabDbContext> options)
 {
     public required DbSet<Workout> Workout { get; set; }
     public required DbSet<Exercise> Exercise { get; set; }
+    public required DbSet<WorkoutExercise> WorkoutExercise { get; set; }
 }
 
 [Index(nameof(IsCanceled))]

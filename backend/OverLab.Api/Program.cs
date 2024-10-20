@@ -171,6 +171,66 @@ app.MapPost("/api/workout/sets", async (AddSet addSet, [FromServices] OverLabDbC
     return Results.Ok(currentWorkout);
 });
 
+app.MapPut("/api/workout/exercises/{workoutExerciseId}", async (string workoutExerciseId, UpdateWorkoutExercise update, [FromServices] OverLabDbContext context) =>
+{
+    var workoutExercise = await context.WorkoutExercise.FindAsync(workoutExerciseId);
+    if (workoutExercise == null)
+        return Results.NotFound("No such workout exercise.");
+
+    workoutExercise.Notes = update.Notes;
+    return Results.Ok(workoutExercise);
+});
+
+app.MapPut("/api/workout", async (string workoutId, UpdateWorkout update, [FromServices] OverLabDbContext context) =>
+{
+    var workout = await context.Workout.FindAsync(workoutId);
+    if (workout == null)
+        return Results.NotFound("No such workout.");
+
+    workout.Notes = update.Notes;
+    return Results.Ok(workout);
+});
+
+app.MapPost("/api/workout/exercises/finish", async ([FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
+
+    var currentExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.ExerciseId != null && !e.IsFinished);
+    if (currentExercise == null)
+        return Results.BadRequest("No exercise in progress.");
+
+    if (currentExercise.Sets.Count == 0)
+        return Results.BadRequest("No sets were recorded yet. Cancel instead of finishing.");
+
+    currentExercise.IsFinished = true;
+    await context.SaveChangesAsync();
+    return Results.Ok(currentExercise);
+});
+
+app.MapPost("/api/workout/exercises/cancel", async ([FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
+
+    var currentExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.ExerciseId != null && !e.IsFinished);
+    if (currentExercise == null)
+        return Results.BadRequest("No exercise in progress.");
+
+    if (currentExercise.Sets.Count > 0)
+        return Results.BadRequest("Cannot cancel once you started lifting. Finish instead.");
+
+    currentExercise.Exercise = null;
+    await context.SaveChangesAsync();
+    return Results.Ok(currentExercise);
+});
+
 await app.RunAsync();
 
 public sealed record WorkoutPlan(
@@ -215,3 +275,5 @@ public sealed record ExcerciseProgress(
     DateTime Date,
     decimal Weight,
     IEnumerable<Set> Sets);
+public sealed record UpdateWorkoutExercise(string Notes);
+public sealed record UpdateWorkout(string Notes);
