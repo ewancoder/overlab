@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input, OnInit, signal, WritableSign
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Excercise, Set } from '../models';
+import { Excercise, NgWorkoutExerciseSet } from '../models';
 import { WorkoutService } from '../workout.service';
 
 @Component({
@@ -20,7 +20,7 @@ export class DoExcerciseComponent implements OnInit {
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
 
     public excercise: WritableSignal<Excercise | undefined> = signal(undefined);
-    public currentSetsSignal: WritableSignal<Set[]> = signal([]);
+    public currentSetsSignal: WritableSignal<NgWorkoutExerciseSet[]> = signal([]);
     public addSetForm = new FormGroup({
         weight: new FormControl(20, Validators.required),
         reps: new FormControl('', Validators.required)
@@ -43,11 +43,11 @@ export class DoExcerciseComponent implements OnInit {
 
     addSet() {
         this.service
-            .addSet(this.addSetForm.controls.weight.value!, this.addSetForm.controls.reps.value!)
-            .subscribe(currentSets => {
-                this.currentSetsSignal.set(currentSets);
+            .addSet({ weight: this.addSetForm.controls.weight.value!, reps: this.addSetForm.controls.reps.value! })
+            .subscribe(workoutExercise => {
+                this.currentSetsSignal.set(workoutExercise.sets);
                 this.addSetForm.controls.reps.reset();
-                this.restTimerSignal.set(this.service.createStopwatch(currentSets.at(-1)!.date));
+                this.restTimerSignal.set(this.service.createStopwatch(workoutExercise.sets.at(-1)!.recordedAtUtc));
             });
     }
 

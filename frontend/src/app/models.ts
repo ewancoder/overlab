@@ -99,3 +99,56 @@ export interface FeWorkoutPlanExcercise {
 // Also ID itself can be human-readable cause these are well-known excercises.
 
 // TODO: Make sure you do NOT do the SAME excercise twice in one day (exclude anything you do from future picks)
+
+/// Below after refactoring & creating the API.
+
+export interface NgWorkoutPlan {
+    id: string;
+    name: string;
+    description: string;
+    exercisePlans: string[];
+}
+
+export interface NgExercisePlan {
+    id: string;
+    name: string;
+    description: string;
+    exercises: string[];
+}
+
+export interface NgExercise {
+    id: string;
+    name: string;
+    description: string;
+}
+
+export interface NgWorkout {
+    id: string;
+    startedAtUtc: Date;
+    isCanceled: boolean;
+    notes?: string;
+    workoutExercises: NgWorkoutExercise[];
+}
+
+export interface NgWorkoutExercise {
+    id: string;
+    exercisePlanId: string;
+    notes?: string;
+    sets: NgWorkoutExerciseSet[];
+    isFinished: boolean;
+    exerciseId?: string;
+}
+
+export interface NgWorkoutExerciseSet {
+    id: number;
+    notes?: string;
+    weight: number;
+    reps: string;
+    recordedAtUtc: Date;
+}
+
+export interface NgAddSet {
+    weight: number;
+    reps: string;
+    notes?: string;
+}

@@ -61,7 +61,7 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
 
             if (existing is null)
             {
-                var newPlan = new ExercisePlan { Id = plan.Id };
+                var newPlan = new ExercisePlan { Id = plan.Id, Name = plan.Id, Description = plan.Id };
                 newPlan.PossibleExercises.AddRange(exercises);
 
                 await context.ExercisePlans.AddAsync(newPlan);
@@ -119,6 +119,8 @@ public sealed class Workout
 public sealed class ExercisePlan
 {
     public required string Id { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
 
     // Navigation property for many-to-many relationship.
     public List<Exercise> PossibleExercises { get; } = [];

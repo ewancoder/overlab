@@ -41,11 +41,23 @@ var plans = new[]
 
 app.MapGet("/diag", () => DateTime.UtcNow);
 
-app.MapGet("/api/plans", () => plans);
+app.MapGet("/api/exercises", async ([FromServices] OverLabDbContext context) => await context.Exercise.ToListAsync());
+app.MapGet("/api/exercise-plans", async ([FromServices] OverLabDbContext context) => await context.ExercisePlans.ToListAsync());
 
-app.MapGet("/api/plans/today", () => plans.FirstOrDefault(x => x.Id == "full-body-3-3"));
+app.MapGet("/api/workout/current", async ([FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
 
-app.MapPost("/api/plans/{planId}/start", async (string planId, [FromServices]OverLabDbContext context) =>
+    if (currentWorkout != null)
+        return Results.NotFound("Workout is not started yet.");
+
+    return Results.Ok(currentWorkout);
+});
+
+app.MapGet("/api/workout-plans", () => plans);
+app.MapGet("/api/workout-plans/today", () => plans.FirstOrDefault(x => x.Id == "full-body-3-3"));
+app.MapPost("/api/workout-plans/{planId}/start", async (string planId, [FromServices]OverLabDbContext context) =>
 {
     var plan = plans.FirstOrDefault(p => p.Id == planId);
     if (plan == null)
@@ -122,7 +134,7 @@ app.MapPost("/api/workout/exercises/:workoutExerciseId/start/:excerciseId", asyn
     currentExercise.Exercise = excercise;
     await context.SaveChangesAsync();
 
-    return Results.Ok(currentWorkout);
+    return Results.Ok(currentExercise);
 });
 
 app.MapPost("/api/workout/sets", async (AddSet addSet, [FromServices] OverLabDbContext context) =>
@@ -150,27 +162,7 @@ app.MapPost("/api/workout/sets", async (AddSet addSet, [FromServices] OverLabDbC
 
     await context.SaveChangesAsync();
 
-    return Results.Ok(currentWorkout);
-});
-
-app.MapPut("/api/workout/exercises/{workoutExerciseId}", async (string workoutExerciseId, UpdateWorkoutExercise update, [FromServices] OverLabDbContext context) =>
-{
-    var workoutExercise = await context.WorkoutExercise.FindAsync(workoutExerciseId);
-    if (workoutExercise == null)
-        return Results.NotFound("No such workout exercise.");
-
-    workoutExercise.Notes = update.Notes;
-    return Results.Ok(workoutExercise);
-});
-
-app.MapPut("/api/workout", async (string workoutId, UpdateWorkout update, [FromServices] OverLabDbContext context) =>
-{
-    var workout = await context.Workout.FindAsync(workoutId);
-    if (workout == null)
-        return Results.NotFound("No such workout.");
-
-    workout.Notes = update.Notes;
-    return Results.Ok(workout);
+    return Results.Ok(currentExercise);
 });
 
 app.MapPost("/api/workout/exercises/finish", async ([FromServices] OverLabDbContext context) =>
@@ -213,7 +205,7 @@ app.MapPost("/api/workout/exercises/cancel", async ([FromServices] OverLabDbCont
     return Results.Ok(currentExercise);
 });
 
-app.MapPost("/api/workout/exercises", async (AddExercise addExercise, [FromServices] OverLabDbContext context) =>
+app.MapPost("/api/workout/exercises/{exercisePlanId}", async (string exercisePlanId, [FromServices] OverLabDbContext context) =>
 {
     var currentWorkout = await context.Workout
         .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
@@ -221,7 +213,7 @@ app.MapPost("/api/workout/exercises", async (AddExercise addExercise, [FromServi
     if (currentWorkout is null)
         return Results.BadRequest("No workout in progress.");
 
-    var exercisePlan = await context.ExercisePlans.FindAsync(addExercise.ExercisePlanId);
+    var exercisePlan = await context.ExercisePlans.FindAsync(exercisePlanId);
     if (exercisePlan is null)
         return Results.BadRequest("No such exercise plan found.");
 
@@ -257,7 +249,27 @@ app.MapDelete("/api/workout/exercises/{workoutExerciseId}", async (string workou
 
     currentWorkout.WorkoutExercises.Remove(workoutExercise);
     await context.SaveChangesAsync();
-    return Results.Ok(currentWorkout);
+    return Results.Ok(workoutExercise);
+});
+
+app.MapPut("/api/workout/exercises/{workoutExerciseId}", async (string workoutExerciseId, UpdateWorkoutExercise update, [FromServices] OverLabDbContext context) =>
+{
+    var workoutExercise = await context.WorkoutExercise.FindAsync(workoutExerciseId);
+    if (workoutExercise == null)
+        return Results.NotFound("No such workout exercise.");
+
+    workoutExercise.Notes = update.Notes;
+    return Results.Ok(workoutExercise);
+});
+
+app.MapPut("/api/workout/{workoutId}", async (string workoutId, UpdateWorkout update, [FromServices] OverLabDbContext context) =>
+{
+    var workout = await context.Workout.FindAsync(workoutId);
+    if (workout == null)
+        return Results.NotFound("No such workout.");
+
+    workout.Notes = update.Notes;
+    return Results.Ok(workout);
 });
 
 await app.RunAsync();
@@ -273,7 +285,7 @@ public sealed record WorkoutPlanExcercise(
     IEnumerable<string> ExcerciseIds,
     string? PerformedExcerciseId = null);
 
-public sealed record AddSet(decimal Weight, string Reps, string Notes);
+public sealed record AddSet(decimal Weight, string Reps, string? Notes);
 public sealed record Set(DateTime Date, decimal Weight, string Reps);
 public sealed record StartExcercise(string WorkoutExerciseId, string ExcerciseId);
 public sealed record Excercise(
