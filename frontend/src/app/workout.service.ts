@@ -14,10 +14,21 @@ function handle404(error: any) {
     return throwError(() => error);
 }
 
+function workoutExerciseWithDates(workoutExercise: NgWorkoutExercise | null) {
+    if (!workoutExercise) return null;
+
+    for (const set of workoutExercise.sets) {
+        set.recordedAtUtc = new Date(set.recordedAtUtc);
+    }
+
+    return workoutExercise;
+}
+
 function workoutWithDates(workout: NgWorkout | null) {
     if (!workout) return null;
 
     workout.startedAtUtc = new Date(workout.startedAtUtc);
+    workout.workoutExercises = workout.workoutExercises.map(x => workoutExerciseWithDates(x)!);
     return workout;
 }
 
@@ -33,8 +44,11 @@ export class WorkoutService {
         return this.http.get<NgExercisePlan[]>(`${apiUri}/exercise-plans`);
     }
 
-    public getCurrentExercise() {
-        return this.http.get<NgWorkoutExercise | null>(`${apiUri}/workout/exercises/current`).pipe(catchError(handle404));
+    public getCurrentWorkoutExercise() {
+        return this.http
+            .get<NgWorkoutExercise | null>(`${apiUri}/workout/exercises/current`)
+            .pipe(catchError(handle404))
+            .pipe(map(workoutExerciseWithDates));
     }
 
     public getCurrentWorkout() {
@@ -50,43 +64,53 @@ export class WorkoutService {
     }
 
     public startWorkout(workoutPlanId: string) {
-        return this.http.post<NgWorkout>(`${apiUri}/workout-plans/${workoutPlanId}/start`, null);
+        return this.http.post<NgWorkout>(`${apiUri}/workout-plans/${workoutPlanId}/start`, null).pipe(map(workoutWithDates));
     }
 
     public cancelWorkout() {
-        return this.http.post<NgWorkout>(`${apiUri}/workout/cancel`, null);
+        return this.http.post<NgWorkout>(`${apiUri}/workout/cancel`, null).pipe(map(workoutWithDates));
     }
 
     public startExercise(workoutExerciseId: string, exerciseId: string) {
-        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}/start/${exerciseId}`, null);
+        return this.http
+            .post<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}/start/${exerciseId}`, null)
+            .pipe(map(workoutExerciseWithDates));
     }
 
     public addSet(addSet: NgAddSet) {
-        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/sets`, addSet);
+        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/sets`, addSet).pipe(map(x => workoutExerciseWithDates(x)!));
     }
 
     public finishExercise() {
-        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/exercises/finish`, null);
+        return this.http
+            .post<NgWorkoutExercise>(`${apiUri}/workout/exercises/finish`, null)
+            .pipe(map(x => workoutExerciseWithDates(x)!));
     }
 
     public cancelExercise() {
-        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/exercises/cancel`, null);
+        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/exercises/cancel`, null).pipe(map(workoutExerciseWithDates));
     }
 
     public addExerciseToWorkout(exercisePlanId: string) {
-        return this.http.post<NgWorkoutExercise>(`${apiUri}/workout/exercises/${exercisePlanId}`, null);
+        return this.http
+            .post<NgWorkoutExercise>(`${apiUri}/workout/exercises/${exercisePlanId}`, null)
+            .pipe(map(workoutExerciseWithDates));
     }
 
     public removeExerciseFromWorkout(workoutExerciseId: string) {
-        return this.http.delete<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}`);
+        return this.http
+            .delete<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}`)
+            .pipe(map(workoutExerciseWithDates));
     }
 
     public updateWorkoutExerciseNotes(workoutExerciseId: string, notes: string) {
-        return this.http.put<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}`, { notes: notes });
+        return this.http
+            .put<NgWorkoutExercise>(`${apiUri}/workout/exercises/${workoutExerciseId}`, { notes: notes })
+            .pipe(map(workoutExerciseWithDates));
     }
 
     public updateWorkoutNotes(workoutId: string, notes: string) {
-        return this.http.put<NgWorkout>(`${apiUri}/workout/${workoutId}`, { notes: notes });
+        return this.http.put<NgWorkout>(`${apiUri}/workout/${workoutId}`, { notes: notes }).pipe(map(workoutWithDates));
     }
 
     public createStopwatch(dateFrom: Date) {

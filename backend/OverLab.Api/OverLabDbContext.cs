@@ -150,7 +150,8 @@ public sealed class WorkoutExercise
 {
     public required string Id { get; set; }
 
-    public required ExercisePlan ExercisePlan { get; set; }
+    [JsonIgnore]
+    public ExercisePlan ExercisePlan { get; set; } = null!;
     public required string ExercisePlanId { get; set; }
 
     public string? Notes { get; set; }
@@ -159,6 +160,7 @@ public sealed class WorkoutExercise
 
     public required bool IsFinished { get; set; }
 
+    [JsonIgnore]
     public Exercise? Exercise { get; set; }
     public string? ExerciseId { get; set; }
 
@@ -181,7 +183,8 @@ public sealed class WorkoutExerciseSet
     public required DateTime RecordedAtUtc { get; set; }
 
     // Navigation property to make sure it's required.
-    public required WorkoutExercise WorkoutExercise { get; set; }
+    [JsonIgnore]
+    public WorkoutExercise WorkoutExercise { get; set; } = null!;
     public required string WorkoutExerciseId { get; set; }
 }
 

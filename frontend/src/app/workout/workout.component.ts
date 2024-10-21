@@ -2,8 +2,9 @@ import { AsyncPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { DoExcerciseComponent } from '../do-excercise/do-excercise.component';
 import { ExcercisePickerComponent } from '../excercise-picker/excercise-picker.component';
-import { NgWorkout, NgWorkoutPlan } from '../models';
+import { NgWorkout, NgWorkoutExercise, NgWorkoutPlan } from '../models';
 import { WorkoutService } from '../workout.service';
 
 /// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,7 +13,7 @@ import { WorkoutService } from '../workout.service';
 @Component({
     selector: 'olab-workout',
     standalone: true,
-    imports: [AsyncPipe, ExcercisePickerComponent],
+    imports: [AsyncPipe, ExcercisePickerComponent, DoExcerciseComponent],
     templateUrl: './workout.component.html',
     styleUrl: './workout.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -21,6 +22,7 @@ export class WorkoutComponent implements OnInit {
     allWorkoutPlansSignal = signal<NgWorkoutPlan[]>([]);
     todayWorkoutPlanSignal = signal<NgWorkoutPlan | null | undefined>(undefined);
     currentWorkoutSignal = signal<NgWorkout | null | undefined>(undefined);
+    currentWorkoutExerciseSignal = signal<NgWorkoutExercise | null | undefined>(undefined);
     workoutTimerSignal = signal<Observable<string> | undefined>(undefined);
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
 
@@ -32,20 +34,15 @@ export class WorkoutComponent implements OnInit {
     ngOnInit() {
         this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlansSignal.set(wps));
         this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanSignal.set(wp));
-
-        this.service.getCurrentWorkout().subscribe(workout => {
-            this.setCurrentWorkout(workout);
-            this.service.getCurrentExercise().subscribe(currentExercise => {
-                if (currentExercise) {
-                    this.router.navigate(['/workout', currentExercise.id, currentExercise.exerciseId]);
-                }
-            });
-        });
+        this.service.getCurrentWorkoutExercise().subscribe(we => this.currentWorkoutExerciseSignal.set(we));
+        this.service.getCurrentWorkout().subscribe(workout => this.setCurrentWorkout(workout));
     }
 
     startExcercise(workoutExerciseId: string, excerciseId: string) {
         // Just redirect. The 'DO' component will update api with start / cancel / finish / update events.
-        this.router.navigate(['/workout', workoutExerciseId, excerciseId]);
+        this.service.startExercise(workoutExerciseId, excerciseId).subscribe(workoutExercise => {
+            this.currentWorkoutExerciseSignal.set(workoutExercise);
+        });
     }
 
     getPerformedExcercises(workout: NgWorkout): string[] {
@@ -54,6 +51,15 @@ export class WorkoutComponent implements OnInit {
 
     startWorkout(workoutPlanId: string) {
         this.service.startWorkout(workoutPlanId).subscribe(workout => this.setCurrentWorkout(workout));
+    }
+
+    finishExercise(workoutExercise: NgWorkoutExercise) {
+        // TODO: Properly update the state without making extra api calls. For now this duplicates ngOnInit():
+        console.log('finished' + workoutExercise);
+        this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlansSignal.set(wps));
+        this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanSignal.set(wp));
+        this.service.getCurrentWorkoutExercise().subscribe(we => this.currentWorkoutExerciseSignal.set(we));
+        this.service.getCurrentWorkout().subscribe(workout => this.setCurrentWorkout(workout));
     }
 
     private setCurrentWorkout(workout: NgWorkout | null) {

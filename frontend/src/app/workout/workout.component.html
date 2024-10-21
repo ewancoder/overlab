@@ -5,15 +5,19 @@
   {{ restTimerSignal() | async }}
 </div>
 @if (currentWorkoutSignal(); as workout) {
-  @for (excercise of workout.workoutExercises; track excercise.id) {
-    <div>
-      <olab-excercise-picker
-        [performedExcerciseIds]="getPerformedExcercises(workout)"
-        [excercise]="excercise"
-        (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
-    </div>
+  @if (currentWorkoutExerciseSignal(); as workoutExercise) {
+    <olab-do-excercise [workoutExercise]="workoutExercise" (exerciseFinished)="finishExercise($event)"></olab-do-excercise>
+  } @else if (currentWorkoutExerciseSignal() === null) {
+    @for (excercise of workout.workoutExercises; track excercise.id) {
+      <div>
+        <olab-excercise-picker
+          [performedExcerciseIds]="getPerformedExcercises(workout)"
+          [excercise]="excercise"
+          (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
+      </div>
+    }
   }
-} @else {
+} @else if (currentWorkoutSignal() === null) {
   @for (wp of allWorkoutPlansSignal(); track wp.id) {
     @if (todayWorkoutPlanSignal()?.id === wp.id) {
       <div>RECOMMENDED FOR TODAY</div>

@@ -1,9 +1,9 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, OnInit, signal, WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, signal, WritableSignal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { NgExercise, NgWorkoutExerciseSet } from '../models';
+import { NgExercise, NgWorkoutExercise, NgWorkoutExerciseSet } from '../models';
 import { WorkoutService } from '../workout.service';
 
 @Component({
@@ -15,8 +15,8 @@ import { WorkoutService } from '../workout.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DoExcerciseComponent implements OnInit {
-    @Input({ required: true }) workoutExerciseId!: string;
-    @Input({ required: true }) excerciseId!: string;
+    @Input({ required: true }) workoutExercise!: NgWorkoutExercise;
+    @Output() exerciseFinished = new EventEmitter<NgWorkoutExercise>();
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
 
     public exerciseSignal: WritableSignal<NgExercise | undefined> = signal(undefined);
@@ -34,11 +34,13 @@ export class DoExcerciseComponent implements OnInit {
     ngOnInit() {
         this.service
             .getAllExercises()
-            .subscribe(exercises => this.exerciseSignal.set(exercises.find(e => e.id == this.excerciseId)));
-    }
+            .subscribe(exercises => this.exerciseSignal.set(exercises.find(e => e.id == this.workoutExercise.exerciseId)));
 
-    startExcercise() {
-        this.service.startExercise(this.workoutExerciseId, this.excerciseId).subscribe();
+        this.currentSetsSignal.set(this.workoutExercise.sets);
+
+        if (this.workoutExercise.sets.length > 0) {
+            this.restTimerSignal.set(this.service.createStopwatch(this.workoutExercise.sets.at(-1)!.recordedAtUtc));
+        }
     }
 
     addSet() {
@@ -54,7 +56,7 @@ export class DoExcerciseComponent implements OnInit {
     finishExcercise() {
         this.service.finishExercise().subscribe(exercise => {
             if (exercise.isFinished) {
-                this.router.navigate(['/workout']);
+                this.exerciseFinished.emit(exercise);
             }
         });
     }
