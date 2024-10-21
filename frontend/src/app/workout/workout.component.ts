@@ -35,6 +35,11 @@ export class WorkoutComponent implements OnInit {
 
         this.service.getCurrentWorkout().subscribe(workout => {
             this.setCurrentWorkout(workout);
+            this.service.getCurrentExercise().subscribe(currentExercise => {
+                if (currentExercise) {
+                    this.router.navigate(['/workout', currentExercise.id, currentExercise.exerciseId]);
+                }
+            });
         });
     }
 

@@ -121,6 +121,21 @@ app.MapPost("/api/workout/cancel", async ([FromServices]OverLabDbContext context
     return Results.Ok(currentWorkout);
 });
 
+app.MapGet("/api/workout/exercises/current", async ([FromServices] OverLabDbContext context) =>
+{
+    var currentWorkout = await context.Workout
+        .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
+
+    if (currentWorkout == null)
+        return Results.BadRequest("No workout in progress.");
+
+    var alreadyStartedExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.ExerciseId != null && !e.IsFinished);
+    if (alreadyStartedExercise == null)
+        return Results.NotFound("There is no already started exercise.");
+
+    return Results.Ok(alreadyStartedExercise);
+});
+
 app.MapPost("/api/workout/exercises/:workoutExerciseId/start/:excerciseId", async (StartExcercise startExcercise, [FromServices] OverLabDbContext context) =>
 {
     var currentWorkout = await context.Workout
@@ -128,6 +143,10 @@ app.MapPost("/api/workout/exercises/:workoutExerciseId/start/:excerciseId", asyn
 
     if (currentWorkout == null)
         return Results.BadRequest("No workout in progress.");
+
+    var alreadyStartedExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.ExerciseId != null && !e.IsFinished);
+    if (alreadyStartedExercise != null)
+        return Results.BadRequest("There is already a started exercise.");
 
     var currentExercise = currentWorkout.WorkoutExercises.SingleOrDefault(e => e.Id == startExcercise.WorkoutExerciseId && !e.IsFinished);
     if (currentExercise == null)

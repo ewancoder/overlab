@@ -1,20 +1,7 @@
 {{ restTimerSignal() | async }}
-@if (excercise(); as excercise) {
+@if (exerciseSignal(); as excercise) {
   <div>{{ excercise.name }}</div>
   <div>{{ excercise.description }}</div>
-  <div>Category: {{ excercise.category }}</div>
-  <div>Type: {{ excercise.type }}</div>
-  @for (muscleGroup of excercise.muscleGroups; track $index) {
-    <div>{{ muscleGroup.typeId }}, impact {{ muscleGroup.impact }}</div>
-  }
-  @for (progress of excercise.progressHistory; track $index) {
-    <div>
-      {{ progress.date | date }} - {{ progress.weight }}kg
-      @for (set of progress.sets; track $index) {
-        {{ set.weight ? set.weight + 'kg' : '' }} {{ set.reps }}
-      }
-    </div>
-  }
 
   <form [formGroup]="addSetForm" (ngSubmit)="addSet()">
     <input type="number" formControlName="weight" />
@@ -27,6 +14,4 @@
   }
 
   <button (click)="finishExcercise()">Finish excercise</button>
-} @else {
-  <button (click)="startExcercise()">Start</button>
 }

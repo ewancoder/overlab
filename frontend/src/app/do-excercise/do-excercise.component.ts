@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input, OnInit, signal, WritableSign
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { Excercise, NgWorkoutExerciseSet } from '../models';
+import { NgExercise, NgWorkoutExerciseSet } from '../models';
 import { WorkoutService } from '../workout.service';
 
 @Component({
@@ -15,11 +15,11 @@ import { WorkoutService } from '../workout.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DoExcerciseComponent implements OnInit {
-    @Input({ required: true }) workoutExcerciseIndex!: string;
+    @Input({ required: true }) workoutExerciseId!: string;
     @Input({ required: true }) excerciseId!: string;
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
 
-    public excercise: WritableSignal<Excercise | undefined> = signal(undefined);
+    public exerciseSignal: WritableSignal<NgExercise | undefined> = signal(undefined);
     public currentSetsSignal: WritableSignal<NgWorkoutExerciseSet[]> = signal([]);
     public addSetForm = new FormGroup({
         weight: new FormControl(20, Validators.required),
@@ -32,13 +32,13 @@ export class DoExcerciseComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        console.log(this.workoutExcerciseIndex + this.excerciseId);
+        this.service
+            .getAllExercises()
+            .subscribe(exercises => this.exerciseSignal.set(exercises.find(e => e.id == this.excerciseId)));
     }
 
     startExcercise() {
-        this.service
-            .startExcercise(this.workoutExcerciseIndex, this.excerciseId)
-            .subscribe(excercise => this.excercise.set(excercise));
+        this.service.startExercise(this.workoutExerciseId, this.excerciseId).subscribe();
     }
 
     addSet() {
@@ -52,6 +52,10 @@ export class DoExcerciseComponent implements OnInit {
     }
 
     finishExcercise() {
-        this.service.finishExcercise().subscribe(() => this.router.navigate(['/workout']));
+        this.service.finishExercise().subscribe(exercise => {
+            if (exercise.isFinished) {
+                this.router.navigate(['/workout']);
+            }
+        });
     }
 }
