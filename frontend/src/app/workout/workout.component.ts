@@ -18,12 +18,11 @@ import { WorkoutService } from '../workout.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WorkoutComponent implements OnInit {
+    allWorkoutPlansSignal = signal<NgWorkoutPlan[]>([]);
+    todayWorkoutPlanSignal = signal<NgWorkoutPlan | null | undefined>(undefined);
+    currentWorkoutSignal = signal<NgWorkout | null | undefined>(undefined);
     workoutTimerSignal = signal<Observable<string> | undefined>(undefined);
     restTimerSignal = signal<Observable<string> | undefined>(undefined);
-
-    currentWorkout = signal<NgWorkout | null>(null);
-    allWorkoutPlans = signal<NgWorkoutPlan[]>([]);
-    todayWorkoutPlanId = signal<string | null>(null);
 
     constructor(
         private service: WorkoutService,
@@ -31,28 +30,38 @@ export class WorkoutComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlans.set(wps));
-        this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanId.set(wp.id));
+        this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlansSignal.set(wps));
+        this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanSignal.set(wp));
 
         this.service.getCurrentWorkout().subscribe(workout => {
-            this.currentWorkout.set(workout);
-            this.workoutTimerSignal.set(this.service.createStopwatch(workout.startedAtUtc));
-            const lastSetsOfFinishedExercises = workout.workoutExercises
-                .filter(e => e.isFinished && e.sets.length > 0)
-                .map(e => e.sets.at(-1)!.recordedAtUtc);
-            if (lastSetsOfFinishedExercises.length > 0) {
-                const maxDate = new Date(Math.max(...lastSetsOfFinishedExercises.map(Number)));
-                this.restTimerSignal.set(this.service.createStopwatch(maxDate));
-            }
+            this.setCurrentWorkout(workout);
         });
     }
 
-    startExcercise(planExcerciseIndex: string, excerciseId: string) {
+    startExcercise(workoutExerciseId: string, excerciseId: string) {
         // Just redirect. The 'DO' component will update api with start / cancel / finish / update events.
-        this.router.navigate(['/workout', planExcerciseIndex, excerciseId]);
+        this.router.navigate(['/workout', workoutExerciseId, excerciseId]);
     }
 
     getPerformedExcercises(workout: NgWorkout): string[] {
         return workout.workoutExercises.map(excercise => excercise.exerciseId!).filter(x => x);
+    }
+
+    startWorkout(workoutPlanId: string) {
+        this.service.startWorkout(workoutPlanId).subscribe(workout => this.setCurrentWorkout(workout));
+    }
+
+    private setCurrentWorkout(workout: NgWorkout | null) {
+        this.currentWorkoutSignal.set(workout);
+        if (workout === null) return;
+
+        this.workoutTimerSignal.set(this.service.createStopwatch(workout.startedAtUtc));
+        const lastSetsOfFinishedExercises = workout.workoutExercises
+            .filter(e => e.isFinished && e.sets.length > 0)
+            .map(e => e.sets.at(-1)!.recordedAtUtc);
+        if (lastSetsOfFinishedExercises.length > 0) {
+            const maxDate = new Date(Math.max(...lastSetsOfFinishedExercises.map(Number)));
+            this.restTimerSignal.set(this.service.createStopwatch(maxDate));
+        }
     }
 }

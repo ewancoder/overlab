@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
 
 namespace OverLab.Api;
 
@@ -161,7 +162,8 @@ public sealed class WorkoutExercise
     public Exercise? Exercise { get; set; }
     public string? ExerciseId { get; set; }
 
-    public required Workout Workout { get; set; }
+    [JsonIgnore]
+    public Workout Workout { get; set; } = null!;
     public required string WorkoutId { get; set; }
 }
 
@@ -190,5 +192,6 @@ public sealed class Exercise
     public required string Description { get; set; }
 
     // Navigation property for many-to-many relationship.
+    [JsonIgnore]
     public ICollection<ExercisePlan> ExercisePlans { get; } = [];
 }

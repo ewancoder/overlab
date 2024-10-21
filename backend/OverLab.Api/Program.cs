@@ -42,14 +42,15 @@ var plans = new[]
 app.MapGet("/diag", () => DateTime.UtcNow);
 
 app.MapGet("/api/exercises", async ([FromServices] OverLabDbContext context) => await context.Exercise.ToListAsync());
-app.MapGet("/api/exercise-plans", async ([FromServices] OverLabDbContext context) => await context.ExercisePlans.ToListAsync());
+app.MapGet("/api/exercise-plans", async ([FromServices] OverLabDbContext context) => await context.ExercisePlans.Include(ep => ep.PossibleExercises).ToListAsync());
 
 app.MapGet("/api/workout/current", async ([FromServices] OverLabDbContext context) =>
 {
     var currentWorkout = await context.Workout
+        .Include(w => w.WorkoutExercises)
         .FirstOrDefaultAsync(w => !w.IsCanceled && w.StartedAtUtc.Date == DateTime.UtcNow.Date);
 
-    if (currentWorkout != null)
+    if (currentWorkout == null)
         return Results.NotFound("Workout is not started yet.");
 
     return Results.Ok(currentWorkout);
@@ -83,7 +84,9 @@ app.MapPost("/api/workout-plans/{planId}/start", async (string planId, [FromServ
     {
         // TODO: Do not create new Exercise plan here, get them by ExercisePlanId from the Plans.
         // And store unique list of ExercisePlans.
-        var localPlan = await context.ExercisePlans.FirstOrDefaultAsync(p => p.Id == pi);
+        var localPlan = await context.ExercisePlans
+            .FirstOrDefaultAsync(p => p.Id == pi);
+
         if (localPlan == null)
             return Results.BadRequest("Did not find such exercise plan.");
 
@@ -97,6 +100,9 @@ app.MapPost("/api/workout-plans/{planId}/start", async (string planId, [FromServ
             WorkoutId = workout.Id
         });
     }
+
+    await context.Workout.AddAsync(workout);
+    await context.SaveChangesAsync();
 
     return Results.Ok(workout);
 });

@@ -4,7 +4,7 @@
 <div>
   {{ restTimerSignal() | async }}
 </div>
-@if (currentWorkout(); as workout) {
+@if (currentWorkoutSignal(); as workout) {
   @for (excercise of workout.workoutExercises; track excercise.id) {
     <div>
       <olab-excercise-picker
@@ -12,5 +12,18 @@
         [excercise]="excercise"
         (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
     </div>
+  }
+} @else {
+  @for (wp of allWorkoutPlansSignal(); track wp.id) {
+    @if (todayWorkoutPlanSignal()?.id === wp.id) {
+      <div>RECOMMENDED FOR TODAY</div>
+    }
+    <div>{{ wp.name }}</div>
+    <div>{{ wp.description }}</div>
+
+    @for (ep of wp.exercisePlans; track $index) {
+      <div>{{ ep }}</div>
+    }
+    <button (click)="startWorkout(wp.id)">Start</button>
   }
 }

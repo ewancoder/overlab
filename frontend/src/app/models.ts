@@ -113,7 +113,7 @@ export interface NgExercisePlan {
     id: string;
     name: string;
     description: string;
-    exercises: string[];
+    possibleExercises: NgExercise[];
 }
 
 export interface NgExercise {

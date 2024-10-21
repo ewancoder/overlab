@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { delay, interval, map, Observable } from 'rxjs';
+import { catchError, delay, interval, map, Observable, of, throwError } from 'rxjs';
 import {
     Excercise,
     FeWorkoutPlan,
@@ -15,6 +15,22 @@ import {
 
 const apiUri = 'http://localhost:5000/api';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handle404(error: any) {
+    if (error.status === 404) {
+        return of(null);
+    }
+
+    return throwError(() => error);
+}
+
+function workoutWithDates(workout: NgWorkout | null) {
+    if (!workout) return null;
+
+    workout.startedAtUtc = new Date(workout.startedAtUtc);
+    return workout;
+}
+
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
     constructor(private http: HttpClient) {}
@@ -28,7 +44,7 @@ export class WorkoutService {
     }
 
     public getCurrentWorkout() {
-        return this.http.get<NgWorkout>(`${apiUri}/workout/current`);
+        return this.http.get<NgWorkout>(`${apiUri}/workout/current`).pipe(catchError(handle404)).pipe(map(workoutWithDates));
     }
 
     public getAllWorkoutPlans() {
@@ -36,7 +52,7 @@ export class WorkoutService {
     }
 
     public getWorkoutPlanForToday() {
-        return this.http.get<NgWorkoutPlan>(`${apiUri}/workout-plans/today`);
+        return this.http.get<NgWorkoutPlan>(`${apiUri}/workout-plans/today`).pipe(catchError(handle404));
     }
 
     public startWorkout(workoutPlanId: string) {
@@ -79,14 +95,14 @@ export class WorkoutService {
         return this.http.put<NgWorkout>(`${apiUri}/workout/${workoutId}`, { notes: notes });
     }
 
-    ///
-    // Old methods below. Ng is above.
-
-    // TODO: Move this method to service-agnostic file.
     public createStopwatch(dateFrom: Date) {
         return interval(1000).pipe(map(() => new Date(new Date().getTime() - dateFrom.getTime()).toISOString().slice(11, 19)));
     }
 
+    ///
+    // Old methods below. Ng is above.
+
+    // TODO: Move this method to service-agnostic file.
     public getTodayWorkoutPlan(): Observable<FeWorkoutPlan> {
         return this.http.get<FeWorkoutPlan>(`${apiUri}/workout/plan`).pipe(map(this.planWithDates), delay(200));
     }
