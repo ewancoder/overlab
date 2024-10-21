@@ -11,7 +11,7 @@ import {
     ViewChild
 } from '@angular/core';
 import { map } from 'rxjs';
-import { NgExercisePlan, NgWorkoutExercise } from '../models';
+import { NgExercisePlan, NgWorkout, NgWorkoutExercise } from '../models';
 import { WorkoutService } from '../workout.service';
 
 @Component({
@@ -25,9 +25,11 @@ import { WorkoutService } from '../workout.service';
 export class ExcercisePickerComponent implements OnInit {
     @Input({ required: true }) excercise!: NgWorkoutExercise;
     @Input({ required: true }) performedExcerciseIds!: string[];
+    @Input({ required: true }) workout!: NgWorkout;
     @ViewChild('picker') picker!: ElementRef<HTMLSelectElement>;
     @Output() excercisePicked = new EventEmitter<string>();
     exercisePlanSignal = signal<NgExercisePlan | undefined>(undefined);
+    singleItemOtherExercisesSignal = signal<string[]>([]);
 
     constructor(private service: WorkoutService) {}
 
@@ -35,6 +37,12 @@ export class ExcercisePickerComponent implements OnInit {
         this.service.getAllExercisePlans().subscribe(plans => {
             const plan = plans.find(p => p.id === this.excercise.exercisePlanId);
             this.exercisePlanSignal.set(plan);
+
+            const singleItemOtherExercises = plans
+                .filter(p => p.id !== this.excercise.exercisePlanId)
+                .filter(p => p.possibleExercises.length === 1)
+                .map(p => p.possibleExercises[0].id);
+            this.singleItemOtherExercisesSignal.set(singleItemOtherExercises);
         });
     }
 

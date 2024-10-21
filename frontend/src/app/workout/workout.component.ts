@@ -32,10 +32,7 @@ export class WorkoutComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlansSignal.set(wps));
-        this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanSignal.set(wp));
-        this.service.getCurrentWorkoutExercise().subscribe(we => this.currentWorkoutExerciseSignal.set(we));
-        this.service.getCurrentWorkout().subscribe(workout => this.setCurrentWorkout(workout));
+        this.initialize();
     }
 
     startExcercise(workoutExerciseId: string, excerciseId: string) {
@@ -50,12 +47,16 @@ export class WorkoutComponent implements OnInit {
     }
 
     startWorkout(workoutPlanId: string) {
-        this.service.startWorkout(workoutPlanId).subscribe(workout => this.setCurrentWorkout(workout));
+        this.service.startWorkout(workoutPlanId).subscribe(() => this.initialize());
     }
 
     finishExercise(workoutExercise: NgWorkoutExercise) {
         // TODO: Properly update the state without making extra api calls. For now this duplicates ngOnInit():
         console.log('finished' + workoutExercise);
+        this.initialize();
+    }
+
+    private initialize() {
         this.service.getAllWorkoutPlans().subscribe(wps => this.allWorkoutPlansSignal.set(wps));
         this.service.getWorkoutPlanForToday().subscribe(wp => this.todayWorkoutPlanSignal.set(wp));
         this.service.getCurrentWorkoutExercise().subscribe(we => this.currentWorkoutExerciseSignal.set(we));
