@@ -11,6 +11,7 @@
     @for (excercise of workout.workoutExercises; track excercise.id) {
       <div>
         <olab-excercise-picker
+          [workout]="workout"
           [performedExcerciseIds]="getPerformedExcercises(workout)"
           [excercise]="excercise"
           (excercisePicked)="startExcercise(excercise.id, $event)"></olab-excercise-picker>
