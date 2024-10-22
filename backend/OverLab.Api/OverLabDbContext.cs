@@ -68,7 +68,7 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
 
         foreach (var plan in _exercisePlans)
         {
-            var existing = await context.ExercisePlans
+            var existing = await context.ExercisePlan
                 .Include(ep => ep.PossibleExercises)
                 .FirstOrDefaultAsync(e => e.Id == plan.Id);
             var exercises = new List<Exercise>();
@@ -83,12 +83,64 @@ sealed file class MigrateDatabaseStartupFilter : IStartupFilter
                 var newPlan = new ExercisePlan { Id = plan.Id, Name = plan.Id, Description = plan.Id };
                 newPlan.PossibleExercises.AddRange(exercises);
 
-                await context.ExercisePlans.AddAsync(newPlan);
+                await context.ExercisePlan.AddAsync(newPlan);
             }
             else
             {
                 existing.PossibleExercises.Clear();
                 existing.PossibleExercises.AddRange(exercises);
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        var plans = new[]
+        {
+            new
+            {
+                Id = "full-body-3-3",
+                Name = "3 day full body, day 3",
+                Description = "The third day of a 3 day full body workout plan.",
+                ExercisePlans = new[] { "deadlift", "chest", "all" }
+            },
+            new
+            {
+                Id = "full-body-3-1",
+                Name = "3 day full body, day 1",
+                Description = "The first day of a 3 day full body workout plan.",
+                ExercisePlans = new[] { "chest", "all" }
+            }
+        };
+
+        foreach (var plan in plans)
+        {
+            var existing = await context.WorkoutPlan
+                .Include(wp => wp.ExercisePlans)
+                .FirstOrDefaultAsync(x => x.Id == plan.Id);
+
+            if (existing is null)
+            {
+                existing = new WorkoutPlan
+                {
+                    Id = plan.Id,
+                    Name = plan.Name,
+                    Description = plan.Description
+                };
+                await context.WorkoutPlan.AddAsync(existing);
+            }
+            else
+            {
+                existing.Name = plan.Name;
+                existing.Description = plan.Description;
+            }
+
+            existing.ExercisePlans.Clear();
+            foreach (var ep in plan.ExercisePlans)
+            {
+                var epDao = await context.ExercisePlan.FindAsync(ep)
+                    ?? throw new InvalidOperationException($"Exercise plan {ep} not found.");
+
+                existing.ExercisePlans.Add(epDao);
             }
         }
 
@@ -116,7 +168,8 @@ public sealed class OverLabDbContext(DbContextOptions<OverLabDbContext> options)
     public required DbSet<Workout> Workout { get; set; }
     public required DbSet<Exercise> Exercise { get; set; }
     public required DbSet<WorkoutExercise> WorkoutExercise { get; set; }
-    public required DbSet<ExercisePlan> ExercisePlans { get; set; }
+    public required DbSet<ExercisePlan> ExercisePlan { get; set; }
+    public required DbSet<WorkoutPlan> WorkoutPlan { get; set; }
 }
 
 [Index(nameof(IsCanceled))]
@@ -196,5 +249,14 @@ public sealed class Exercise
 
     // Navigation property for many-to-many relationship.
     [JsonIgnore]
+    public ICollection<ExercisePlan> ExercisePlans { get; } = [];
+}
+
+public sealed class WorkoutPlan
+{
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public required string Description { get; set; }
+
     public ICollection<ExercisePlan> ExercisePlans { get; } = [];
 }

@@ -79,10 +79,17 @@ namespace OverLab.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.HasKey("Id")
-                        .HasName("pk_exercise_plans");
+                    b.Property<string>("WorkoutPlanId")
+                        .HasColumnType("text")
+                        .HasColumnName("workout_plan_id");
 
-                    b.ToTable("exercise_plans", (string)null);
+                    b.HasKey("Id")
+                        .HasName("pk_exercise_plan");
+
+                    b.HasIndex("WorkoutPlanId")
+                        .HasDatabaseName("ix_exercise_plan_workout_plan_id");
+
+                    b.ToTable("exercise_plan", (string)null);
                 });
 
             modelBuilder.Entity("OverLab.Api.Workout", b =>
@@ -201,6 +208,28 @@ namespace OverLab.Api.Migrations
                     b.ToTable("workout_exercise_set", (string)null);
                 });
 
+            modelBuilder.Entity("OverLab.Api.WorkoutPlan", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_workout_plan");
+
+                    b.ToTable("workout_plan", (string)null);
+                });
+
             modelBuilder.Entity("ExerciseExercisePlan", b =>
                 {
                     b.HasOne("OverLab.Api.ExercisePlan", null)
@@ -208,7 +237,7 @@ namespace OverLab.Api.Migrations
                         .HasForeignKey("ExercisePlansId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_exercise_exercise_plan_exercise_plans_exercise_plans_id");
+                        .HasConstraintName("fk_exercise_exercise_plan_exercise_plan_exercise_plans_id");
 
                     b.HasOne("OverLab.Api.Exercise", null)
                         .WithMany()
@@ -216,6 +245,14 @@ namespace OverLab.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_exercise_exercise_plan_exercise_possible_exercises_id");
+                });
+
+            modelBuilder.Entity("OverLab.Api.ExercisePlan", b =>
+                {
+                    b.HasOne("OverLab.Api.WorkoutPlan", null)
+                        .WithMany("ExercisePlans")
+                        .HasForeignKey("WorkoutPlanId")
+                        .HasConstraintName("fk_exercise_plan_workout_plan_workout_plan_id");
                 });
 
             modelBuilder.Entity("OverLab.Api.WorkoutExercise", b =>
@@ -230,7 +267,7 @@ namespace OverLab.Api.Migrations
                         .HasForeignKey("ExercisePlanId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_workout_exercise_exercise_plans_exercise_plan_id");
+                        .HasConstraintName("fk_workout_exercise_exercise_plan_exercise_plan_id");
 
                     b.HasOne("OverLab.Api.Workout", "Workout")
                         .WithMany("WorkoutExercises")
@@ -266,6 +303,11 @@ namespace OverLab.Api.Migrations
             modelBuilder.Entity("OverLab.Api.WorkoutExercise", b =>
                 {
                     b.Navigation("Sets");
+                });
+
+            modelBuilder.Entity("OverLab.Api.WorkoutPlan", b =>
+                {
+                    b.Navigation("ExercisePlans");
                 });
 #pragma warning restore 612, 618
         }

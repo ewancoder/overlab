@@ -21,28 +21,10 @@ builder.Services.AddOverLabDbContext(connectionString);
 var app = builder.Build();
 app.UseCors("cors");
 
-var plans = new[]
-{
-    new
-    {
-        Id = "full-body-3-3",
-        Name = "3 day full body, day 3",
-        Description = "The third day of a 3 day full body workout plan.",
-        ExercisePlans = new[] { "deadlift", "chest", "all" }
-    },
-    new
-    {
-        Id = "full-body-3-1",
-        Name = "3 day full body, day 1",
-        Description = "The first day of a 3 day full body workout plan.",
-        ExercisePlans = new[] { "chest", "all" }
-    }
-};
-
 app.MapGet("/diag", () => DateTime.UtcNow);
 
 app.MapGet("/api/exercises", async ([FromServices] OverLabDbContext context) => await context.Exercise.ToListAsync());
-app.MapGet("/api/exercise-plans", async ([FromServices] OverLabDbContext context) => await context.ExercisePlans.Include(ep => ep.PossibleExercises).ToListAsync());
+app.MapGet("/api/exercise-plans", async ([FromServices] OverLabDbContext context) => await context.ExercisePlan.Include(ep => ep.PossibleExercises).ToListAsync());
 
 app.MapGet("/api/workout/current", async ([FromServices] OverLabDbContext context) =>
 {
@@ -57,11 +39,17 @@ app.MapGet("/api/workout/current", async ([FromServices] OverLabDbContext contex
     return Results.Ok(currentWorkout);
 });
 
-app.MapGet("/api/workout-plans", () => plans);
-app.MapGet("/api/workout-plans/today", () => plans.FirstOrDefault(x => x.Id == "full-body-3-3"));
+app.MapGet("/api/workout-plans", async ([FromServices] OverLabDbContext context)
+    => await context.WorkoutPlan.ToListAsync());
+
+app.MapGet("/api/workout-plans/today", async ([FromServices] OverLabDbContext context)
+    => await context.WorkoutPlan.FirstOrDefaultAsync(x => x.Id == "full-body-3-3"));
+
 app.MapPost("/api/workout-plans/{planId}/start", async (string planId, [FromServices]OverLabDbContext context) =>
 {
-    var plan = plans.FirstOrDefault(p => p.Id == planId);
+    var plan = await context.WorkoutPlan
+        .Include(wp => wp.ExercisePlans)
+        .FirstOrDefaultAsync(p => p.Id == planId);
     if (plan == null)
         return Results.NotFound("Plan with such Id does not exist.");
 
@@ -81,21 +69,13 @@ app.MapPost("/api/workout-plans/{planId}/start", async (string planId, [FromServ
 
     var plannedPlans = plan.ExercisePlans;
 
-    foreach (var pi in plannedPlans)
+    foreach (var localPlan in plannedPlans)
     {
-        // TODO: Do not create new Exercise plan here, get them by ExercisePlanId from the Plans.
-        // And store unique list of ExercisePlans.
-        var localPlan = await context.ExercisePlans
-            .FirstOrDefaultAsync(p => p.Id == pi);
-
-        if (localPlan == null)
-            return Results.BadRequest("Did not find such exercise plan.");
-
         workout.WorkoutExercises.Add(new WorkoutExercise
         {
             Id = Guid.NewGuid().ToString(),
             ExercisePlan = localPlan,
-            ExercisePlanId = pi,
+            ExercisePlanId = localPlan.Id,
             IsFinished = false,
             Workout = workout,
             WorkoutId = workout.Id
@@ -246,7 +226,7 @@ app.MapPost("/api/workout/exercises/{exercisePlanId}", async (string exercisePla
     if (currentWorkout is null)
         return Results.BadRequest("No workout in progress.");
 
-    var exercisePlan = await context.ExercisePlans.FindAsync(exercisePlanId);
+    var exercisePlan = await context.ExercisePlan.FindAsync(exercisePlanId);
     if (exercisePlan is null)
         return Results.BadRequest("No such exercise plan found.");
 
@@ -305,13 +285,131 @@ app.MapPut("/api/workout/{workoutId}", async (string workoutId, UpdateWorkout up
     return Results.Ok(workout);
 });
 
+// Editor.
+
+app.MapPost("/api/exercises", async (CreateExercise createExercise, [FromServices] OverLabDbContext context) =>
+{
+    var exercise = new Exercise
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = createExercise.Name,
+        Description = createExercise.Description
+    };
+
+    await context.Exercise.AddAsync(exercise);
+    await context.SaveChangesAsync();
+
+    return Results.Ok(exercise);
+});
+
+app.MapPut("/api/exercises/{exerciseId}", async (string exerciseId, UpdateExercise updateExercise, [FromServices] OverLabDbContext context) =>
+{
+    var exercise = await context.Exercise.FindAsync(exerciseId);
+    if (exercise is null)
+        return Results.NotFound("No such exercise.");
+
+    exercise.Name = updateExercise.Name;
+    exercise.Description = updateExercise.Description;
+    await context.SaveChangesAsync();
+    return Results.Ok(exercise);
+});
+
+app.MapDelete("/api/exercises/{exerciseId}", async (string exerciseId, [FromServices] OverLabDbContext context) =>
+{
+    var exercise = await context.Exercise.FindAsync(exerciseId);
+    if (exercise is null)
+        return Results.NotFound("No such exercise.");
+
+    context.Exercise.Remove(exercise);
+    await context.SaveChangesAsync();
+    return Results.Ok(exercise);
+});
+
+app.MapPost("/api/exercise-plans", async (CreateExercisePlan createPlan, [FromServices] OverLabDbContext context) =>
+{
+    var exercisePlan = new ExercisePlan
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = createPlan.Name,
+        Description = createPlan.Description
+    };
+
+    await context.ExercisePlan.AddAsync(exercisePlan);
+    await context.SaveChangesAsync();
+    return Results.Ok(exercisePlan);
+});
+
+app.MapPut("/api/exercise-plans/{exercisePlanId}", async (string exercisePlanId, UpdateExercisePlan updatePlan, [FromServices] OverLabDbContext context) =>
+{
+    var exercisePlan = await context.ExercisePlan.FindAsync(exercisePlanId);
+    if (exercisePlan is null)
+        return Results.NotFound("No such exercise plan.");
+
+    exercisePlan.Name = updatePlan.Name;
+    exercisePlan.Description = updatePlan.Description;
+    await context.SaveChangesAsync();
+    return Results.Ok(exercisePlan);
+});
+
+app.MapDelete("/api/exercise-plans/{exercisePlanId}", async (string exercisePlanId, [FromServices] OverLabDbContext context) =>
+{
+    var exercisePlan = await context.ExercisePlan.FindAsync(exercisePlanId);
+    if (exercisePlan is null)
+        return Results.NotFound("No such exercise plan.");
+
+    context.ExercisePlan.Remove(exercisePlan);
+    await context.SaveChangesAsync();
+    return Results.Ok(exercisePlan);
+});
+
+app.MapPost("/api/exercise-plans/{exercisePlanId}/exercises/{exerciseId}", async (string exercisePlanId, string exerciseId, [FromServices] OverLabDbContext context) =>
+{
+    var exercisePlan = await context.ExercisePlan
+        .Include(ep => ep.PossibleExercises)
+        .FirstOrDefaultAsync(ep => ep.Id == exercisePlanId);
+
+    if (exercisePlan is null)
+        return Results.NotFound("No such exercise plan.");
+
+    var exercise = await context.Exercise.FindAsync(exerciseId);
+    if (exercise is null)
+        return Results.NotFound("No such exercise.");
+
+    exercisePlan.PossibleExercises.Add(exercise);
+    await context.SaveChangesAsync();
+    return Results.Ok(exercisePlan);
+});
+
+app.MapDelete("/api/exercise-plans/{exercisePlanId}/exercises/{exerciseId}", async (string exercisePlanId, string exerciseId, [FromServices] OverLabDbContext context) =>
+{
+    var exercisePlan = await context.ExercisePlan
+        .Include(ep => ep.PossibleExercises)
+        .FirstOrDefaultAsync(ep => ep.Id == exercisePlanId);
+
+    if (exercisePlan is null)
+        return Results.NotFound("No such exercise plan.");
+
+    var exercise = exercisePlan.PossibleExercises.FirstOrDefault(pe => pe.Id == exerciseId);
+    if (exercise is null)
+        return Results.NotFound("No such exercise on the plan.");
+
+    exercisePlan.PossibleExercises.Remove(exercise);
+
+    await context.SaveChangesAsync();
+    return Results.Ok(exercisePlan);
+});
+
+app.MapPost("/api/workout-plans", async (CreateWorkoutPlan) =>
+{
+});
+
 await app.RunAsync();
 
-public sealed record WorkoutPlan(
-    string Id,
-    DateTime? StartedAt,
-    DateTime? LastExcerciseFinishedAt,
-    IEnumerable<WorkoutPlanExcercise> Excercises);
+public sealed record CreateWorkoutPlan();
+public sealed record CreateExercise(string Name, string Description);
+public sealed record UpdateExercise(string Name, string Description);
+public sealed record CreateExercisePlan(string Name, string Description);
+public sealed record UpdateExercisePlan(string Name, string Description);
 
 public sealed record WorkoutPlanExcercise(
     string Id,
@@ -351,4 +449,4 @@ public sealed record ExcerciseProgress(
     IEnumerable<Set> Sets);
 public sealed record UpdateWorkoutExercise(string Notes);
 public sealed record UpdateWorkout(string Notes);
-public sealed record AddExercise(string ExercisePlanId);
+public sealed record AddExerciseToWorkout(string ExercisePlanId);

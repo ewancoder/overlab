@@ -25,19 +25,6 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.CreateTable(
-            name: "exercise_plans",
-            columns: table => new
-            {
-                id = table.Column<string>(type: "text", nullable: false),
-                name = table.Column<string>(type: "text", nullable: false),
-                description = table.Column<string>(type: "text", nullable: false)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("pk_exercise_plans", x => x.id);
-            });
-
-        migrationBuilder.CreateTable(
             name: "workout",
             columns: table => new
             {
@@ -52,6 +39,38 @@ public partial class Initial : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "workout_plan",
+            columns: table => new
+            {
+                id = table.Column<string>(type: "text", nullable: false),
+                name = table.Column<string>(type: "text", nullable: false),
+                description = table.Column<string>(type: "text", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_workout_plan", x => x.id);
+            });
+
+        migrationBuilder.CreateTable(
+            name: "exercise_plan",
+            columns: table => new
+            {
+                id = table.Column<string>(type: "text", nullable: false),
+                name = table.Column<string>(type: "text", nullable: false),
+                description = table.Column<string>(type: "text", nullable: false),
+                workout_plan_id = table.Column<string>(type: "text", nullable: true)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_exercise_plan", x => x.id);
+                table.ForeignKey(
+                    name: "fk_exercise_plan_workout_plan_workout_plan_id",
+                    column: x => x.workout_plan_id,
+                    principalTable: "workout_plan",
+                    principalColumn: "id");
+            });
+
+        migrationBuilder.CreateTable(
             name: "exercise_exercise_plan",
             columns: table => new
             {
@@ -62,9 +81,9 @@ public partial class Initial : Migration
             {
                 table.PrimaryKey("pk_exercise_exercise_plan", x => new { x.exercise_plans_id, x.possible_exercises_id });
                 table.ForeignKey(
-                    name: "fk_exercise_exercise_plan_exercise_plans_exercise_plans_id",
+                    name: "fk_exercise_exercise_plan_exercise_plan_exercise_plans_id",
                     column: x => x.exercise_plans_id,
-                    principalTable: "exercise_plans",
+                    principalTable: "exercise_plan",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
@@ -95,9 +114,9 @@ public partial class Initial : Migration
                     principalTable: "exercise",
                     principalColumn: "id");
                 table.ForeignKey(
-                    name: "fk_workout_exercise_exercise_plans_exercise_plan_id",
+                    name: "fk_workout_exercise_exercise_plan_exercise_plan_id",
                     column: x => x.exercise_plan_id,
-                    principalTable: "exercise_plans",
+                    principalTable: "exercise_plan",
                     principalColumn: "id",
                     onDelete: ReferentialAction.Cascade);
                 table.ForeignKey(
@@ -135,6 +154,11 @@ public partial class Initial : Migration
             name: "ix_exercise_exercise_plan_possible_exercises_id",
             table: "exercise_exercise_plan",
             column: "possible_exercises_id");
+
+        migrationBuilder.CreateIndex(
+            name: "ix_exercise_plan_workout_plan_id",
+            table: "exercise_plan",
+            column: "workout_plan_id");
 
         migrationBuilder.CreateIndex(
             name: "ix_workout_is_canceled",
@@ -188,9 +212,12 @@ public partial class Initial : Migration
             name: "exercise");
 
         migrationBuilder.DropTable(
-            name: "exercise_plans");
+            name: "exercise_plan");
 
         migrationBuilder.DropTable(
             name: "workout");
+
+        migrationBuilder.DropTable(
+            name: "workout_plan");
     }
 }
