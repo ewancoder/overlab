@@ -1,1 +1,6 @@
-<p>exercises works!</p>
+@for (exercise of exercises(); track exercise.id) {
+  <div>{{ exercise.name }}</div>
+  <button [routerLink]="exercise.id">Edit</button>
+}
+
+<button>Create new</button>
