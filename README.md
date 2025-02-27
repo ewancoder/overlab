@@ -21,3 +21,15 @@ For the sake of this example, $PROJECT_NAME=overlab
 - use OnPush change detection in app.component.ts, remove title field, adjust Title in Index.html
 - add README & LICENSE files to the root of the repo
 - rename branch to main, commit initial commit
+- create Dockerfile-production and Dockerfile-development (identical for now; or just production if no develop branch yet), add Nginx config file
+
+## Overall
+
+- create Docker compose file in the root
+- create .github/workflows/deploy.yml file (use this project for reference)
+
+  - (current state) minimal, without tests
+  - 2 branches: main & develop (I need at least 2 environments)
+    - hotfix branch deploys to production
+  - for now without backend
+  - add needed secrets to github repo
