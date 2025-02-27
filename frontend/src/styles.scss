@@ -1,0 +1,28 @@
+$light-theme: (
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(255, 255, 255, 0.95)
+);
+
+$dark-theme: (
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(0, 0, 0, 0.9)
+);
+
+@mixin theme($theme) {
+  --background-url: #{map-get($theme, background-url)};
+  --background-filter: #{map-get($theme, background-filter)};
+}
+
+.light-theme {
+  @include theme($light-theme);
+}
+
+.dark-theme {
+  @include theme($dark-theme);
+}
+
+html {
+  font-size: 1.8rem;
+  background:
+    linear-gradient(var(--background-filter), var(--background-filter)), var(--background-url);
+}

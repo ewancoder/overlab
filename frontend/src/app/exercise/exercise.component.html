@@ -1,0 +1,24 @@
+@let exercise = exercise$ | async;
+@if (exercise) {
+  <div>
+    {{ exercise.name }}
+  </div>
+  <div class="history">
+    @for (hist of exercise.history; track $index) {
+      <div class="history-row">
+        <div class="date-column">{{ getDate(hist) }}</div>
+        <div class="set-column">
+          @for (set of hist.sets; track set.timestamp) {
+            {{ set.reps }}
+          }
+        </div>
+      </div>
+    }
+    <div class="history-row">
+      <div class="date-column today">Today</div>
+      <div class="set-column today" (click)="submitRep()"></div>
+    </div>
+  </div>
+} @else {
+  Loading...
+}
