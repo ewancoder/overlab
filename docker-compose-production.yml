@@ -6,7 +6,7 @@ networks:
     external: true
 
 services:
-  habits-web:
+  overlab-web:
     image: ghcr.io/ewancoder/overlab-web:main
     container_name: overlab-web
     restart: unless-stopped
