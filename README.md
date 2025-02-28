@@ -22,6 +22,7 @@ For the sake of this example, $PROJECT_NAME=overlab
 - add README & LICENSE files to the root of the repo
 - rename branch to main, commit initial commit
 - create Dockerfile-production and Dockerfile-development (identical for now; or just production if no develop branch yet), add Nginx config file
+- copy/connect framework folder (containing shared code & authentication service & component) from other projects / submodule
 
 ## Overall
 
