@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.exercise {
+  padding: 10px;
+  margin: 10px;
+  border: 1px solid #aaa;
+}
+
+.exercise-info {
+  font-size: 0.7rem;
+}

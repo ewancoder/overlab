@@ -35,6 +35,32 @@ export class ExercisesService {
                             ]
                         }
                     ]
+                },
+                {
+                    id: 'cable-fly',
+                    name: 'Cable Fly',
+                    history: [
+                        {
+                            sets: [
+                                {
+                                    timestamp: new Date(2024, 1, 1),
+                                    reps: '55'
+                                },
+                                {
+                                    timestamp: new Date(2024, 2, 2),
+                                    reps: '30*'
+                                }
+                            ]
+                        },
+                        {
+                            sets: [
+                                {
+                                    timestamp: new Date(2024, 3, 3),
+                                    reps: '5+31'
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]);
         this.data$.next(

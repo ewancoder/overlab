@@ -1,0 +1,6 @@
+@for (exercise of service.exercises$ | async; track exercise.id) {
+  <div class="exercise">
+    <a [routerLink]="exercise.id">{{ exercise.name }}</a>
+    <div class="exercise-info">{{ getExerciseInfo(exercise) }}</div>
+  </div>
+}
