@@ -16,7 +16,7 @@ For the sake of this example, $PROJECT_NAME=overlab
 - copy prettierrc.json from another project, configure vscode
 - `ng add @angular-eslint/schematics --skip-confirmation`
 - go through all files, re-save them, remove extra comments or unneeded data
-- change indent to 4 characters in editorconfig
+- change indent to 4 characters in editorconfig (for TS, 2 for the rest)
 - update favicon
 - use OnPush change detection in app.component.ts, remove title field, adjust Title in Index.html
 - add README & LICENSE files to the root of the repo
