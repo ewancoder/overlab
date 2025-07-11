@@ -19,4 +19,7 @@
       <Link>.dockerignore</Link>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OverLab.Domain\OverLab.Domain.csproj" />
+  </ItemGroup>
 </Project>

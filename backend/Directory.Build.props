@@ -37,6 +37,7 @@
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="AutoFixture.Xunit2" />
         <PackageReference Include="AutoFixture.AutoMoq" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <Using Include="Xunit" />
         <Using Include="AutoFixture" />
         <Using Include="AutoFixture.Xunit2" />
