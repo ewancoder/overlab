@@ -1,0 +1,42 @@
+:host {
+  font-size: 1.5rem;
+  padding: 2px;
+  margin: 2px;
+  display: flex;
+  width: 3rem;
+  height: 3rem;
+  line-height: 3rem;
+  font-weight: bold;
+
+  &.regular {
+    background-color: var(--regular-rep-color);
+  }
+
+  &.llp {
+    background-color: var(--llp-rep-color);
+  }
+
+  &.allp {
+    background-color: var(--allp-rep-color);
+  }
+}
+
+.weight {
+  position: absolute;
+  line-height: 0.8rem;
+  font-size: 0.6em;
+  padding-left: 2px;
+  font-weight: normal;
+}
+
+.type {
+  position: absolute;
+  line-height: 5.4rem;
+  font-size: 0.5em;
+  padding-left: 2px;
+  font-weight: normal;
+}
+
+.amount {
+  margin: 0 auto;
+}

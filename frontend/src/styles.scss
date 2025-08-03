@@ -1,0 +1,46 @@
+// TODO: Move theming to themes.scss.
+$light-theme: (
+  font-family: 'Lora',
+  primary-color: #111,
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(255, 255, 255, 0.95),
+  regular-rep-color: #8eedf8,
+  allp-rep-color: #8ef897,
+  llp-rep-color: #f8ea8e
+);
+
+$dark-theme: (
+  font-family: 'Lora',
+  primary-color: #ddd,
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(0, 0, 0, 0.9),
+  regular-rep-color: #066773,
+  allp-rep-color: #03510d,
+  llp-rep-color: #4c3f04
+);
+
+@mixin theme($theme) {
+  --font-family: #{map-get($theme, font-family)};
+  --primary-color: #{map-get($theme, primary-color)};
+  --background-url: #{map-get($theme, background-url)};
+  --background-filter: #{map-get($theme, background-filter)};
+  --regular-rep-color: #{map-get($theme, regular-rep-color)};
+  --allp-rep-color: #{map-get($theme, allp-rep-color)};
+  --llp-rep-color: #{map-get($theme, llp-rep-color)};
+}
+
+.light-theme {
+  @include theme($light-theme);
+}
+
+.dark-theme {
+  @include theme($dark-theme);
+}
+
+html {
+  font-family: var(--font-family);
+  font-size: 3vw;
+  color: var(--primary-color);
+  background:
+    linear-gradient(var(--background-filter), var(--background-filter)), var(--background-url);
+}
