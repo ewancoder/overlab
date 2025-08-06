@@ -3,6 +3,7 @@ $light-theme: (
   primary-color: #111,
   primary-color-rgb: '17, 17, 17',
   background-url: url('/bg.jpg'),
+  background: #fafafa,
   background-filter: rgba(255, 255, 255, 0.95),
   regular-rep-color: #8eedf8,
   allp-rep-color: #8ef897,
@@ -17,6 +18,7 @@ $dark-theme: (
   primary-color: #ddd,
   primary-color-rgb: '221, 221, 221',
   background-url: url('/bg.jpg'),
+  background: #2e2e2e,
   background-filter: rgba(0, 0, 0, 0.9),
   regular-rep-color: #066773,
   allp-rep-color: #03510d,
@@ -31,6 +33,7 @@ $dark-theme: (
   --primary-color: #{map-get($theme, primary-color)};
   --primary-color-rgb: #{map-get($theme, primary-color-rgb)};
   --background-url: #{map-get($theme, background-url)};
+  --background: #{map-get($theme, background)};
   --background-filter: #{map-get($theme, background-filter)};
   --regular-rep-color: #{map-get($theme, regular-rep-color)};
   --allp-rep-color: #{map-get($theme, allp-rep-color)};
@@ -54,6 +57,12 @@ input {
   line-height: 1rem;
   height: 2rem;
   box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px 0px;
+  background: var(--background);
+}
+
+input:focus {
+  outline: solid 1px;
+  outline-color: var(--primary-color);
 }
 
 button {
