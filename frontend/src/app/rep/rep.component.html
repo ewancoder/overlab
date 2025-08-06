@@ -1,7 +1,11 @@
-@if (showWeight) {
-  <div class="weight">{{ rep.weight | weight }}</div>
-}
-@if (showType) {
-  <div class="type">{{ getReadableRepType(rep.type) }}</div>
-}
+<div class="weight">
+  @if (showWeight) {
+    {{ rep.weight | weight }}
+  }
+</div>
 <div class="amount">{{ rep.amount }}</div>
+<div class="type">
+  @if (showType) {
+    {{ getReadableRepType(rep.type) }}
+  }
+</div>

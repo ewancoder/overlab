@@ -1,0 +1,43 @@
+$light-theme: (
+  font-family: 'Lora',
+  primary-color: #111,
+  primary-color-rgb: '17, 17, 17',
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(255, 255, 255, 0.95),
+  regular-rep-color: #8eedf8,
+  allp-rep-color: #8ef897,
+  llp-rep-color: #f8ea8e,
+  nav-btn-color: rgba(204, 221, 204, 0.8)
+);
+
+$dark-theme: (
+  font-family: 'Lora',
+  primary-color: #ddd,
+  primary-color-rgb: '221, 221, 221',
+  background-url: url('/bg.jpg'),
+  background-filter: rgba(0, 0, 0, 0.9),
+  regular-rep-color: #066773,
+  allp-rep-color: #03510d,
+  llp-rep-color: #4c3f04,
+  nav-btn-color: rgba(58, 81, 30, 0.8)
+);
+
+@mixin theme($theme) {
+  --font-family: #{map-get($theme, font-family)};
+  --primary-color: #{map-get($theme, primary-color)};
+  --primary-color-rgb: #{map-get($theme, primary-color-rgb)};
+  --background-url: #{map-get($theme, background-url)};
+  --background-filter: #{map-get($theme, background-filter)};
+  --regular-rep-color: #{map-get($theme, regular-rep-color)};
+  --allp-rep-color: #{map-get($theme, allp-rep-color)};
+  --llp-rep-color: #{map-get($theme, llp-rep-color)};
+  --nav-btn-color: #{map-get($theme, nav-btn-color)};
+}
+
+.light-theme {
+  @include theme($light-theme);
+}
+
+.dark-theme {
+  @include theme($dark-theme);
+}

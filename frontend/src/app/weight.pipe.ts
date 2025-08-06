@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { computed, Pipe, PipeTransform, Signal } from '@angular/core';
+import { Pipe, PipeTransform } from '@angular/core';
 import { SettingsService } from './settings.service';
 
 @Pipe({

@@ -33,10 +33,9 @@ describe('AppComponent', () => {
             expect(component).toBeDefined();
         });
 
-        // TODO: Consider testing it somehow against vw units.
-        /*it('should have proper font size', () => {
+        it('should have proper font size', () => {
             const expectedFontSize = 1; // em.
             expect(getComputedStyle(html).fontSize).toBe(`${rootPx * expectedFontSize}px`);
-        });*/
+        });
     });
 });

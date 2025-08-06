@@ -1,19 +1,20 @@
 :host {
   display: flex;
   flex-direction: row;
+  align-items: center;
 
-  border: #aaa 1px solid;
+  border: 1px solid;
   border-radius: 10px;
-  padding: 0 2px;
-  margin: 0 2px;
+  border-color: rgba(var(--primary-color-rgb), 0.2);
 
   &.compact {
     border: none;
   }
+
+  padding: 2px 4px;
 }
 
 .weight {
-  padding: 4px;
-  font-size: 1.2rem;
   text-align: center;
+  width: 3rem;
 }

@@ -1,3 +1,3 @@
 @for (subSet of getSubSets(); track $index) {
-  <olab-subset [subset]="subSet" [isCompact]="isCompact" [showType]="showType"></olab-subset>
+  <olab-subset [subset]="subSet" [isCompact]="settings.compactView()"></olab-subset>
 }

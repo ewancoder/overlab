@@ -1,7 +1,7 @@
 <img class="top-nav-btn" src="/theme.png" (click)="themeService.toggleTheme()" />
-<button (click)="isCompact = !isCompact">compact</button>
-<button (click)="showType = !showType">type</button>
+<button (click)="settings.toggleCompactView()">compact</button>
+<button (click)="settings.toggleRepTypes()">type</button>
 <button (click)="settings.toggleUnits()">units</button>
 @for (set of sets; track $index) {
-  <olab-performance [set]="set" [isCompact]="isCompact" [showType]="showType"></olab-performance>
+  <olab-performance [set]="set"></olab-performance>
 }

@@ -1,0 +1,6 @@
+@if (!isCompact) {
+  <div class="weight">{{ subset.weight | weight: true }}</div>
+}
+@for (rep of subset.reps; track $index) {
+  <olab-rep [rep]="rep" [showWeight]="isCompact" [showType]="settings.showRepTypes()"></olab-rep>
+}

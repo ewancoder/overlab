@@ -11,6 +11,4 @@ import { DatePipe } from '@angular/common';
 })
 export class PerformanceComponent {
     @Input({ required: true }) set!: Set;
-    @Input() isCompact = false;
-    @Input() showType = true;
 }

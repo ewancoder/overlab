@@ -1,22 +1,19 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ThemeService } from './theme.service';
-import { Set, SetComponent } from './set/set.component';
+import { Set } from './set/set.component';
 import { RepType } from './rep/rep.component';
 import { SettingsService } from './settings.service';
 import { PerformanceComponent } from './performance/performance.component';
 
 @Component({
     selector: 'olab-root',
-    imports: [RouterOutlet, SetComponent, PerformanceComponent],
+    imports: [RouterOutlet, PerformanceComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent {
-    isCompact = false;
-    showType = true;
-    lbs = false;
     constructor(
         protected themeService: ThemeService,
         protected settings: SettingsService

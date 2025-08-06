@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { Rep } from '../rep/rep.component';
-import { SubsetComponent } from '../subset/subset.component';
+import { SubSet, SubsetComponent } from './subset/subset.component';
+import { SettingsService } from '../settings.service';
 
 @Component({
     selector: 'olab-set',
@@ -10,9 +11,9 @@ import { SubsetComponent } from '../subset/subset.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SetComponent {
-    @Input() isCompact = false;
-    @Input() showType = true;
     @Input({ required: true }) set!: Set;
+
+    constructor(protected settings: SettingsService) {}
 
     protected getSubSets() {
         let weight = 0;
@@ -49,10 +50,5 @@ export class SetComponent {
 
 export interface Set {
     date: Date;
-    reps: Rep[];
-}
-
-export interface SubSet {
-    weight: number;
     reps: Rep[];
 }

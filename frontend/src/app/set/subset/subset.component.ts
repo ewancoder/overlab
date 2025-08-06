@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input } from '@angular/core';
-import { Rep, RepComponent } from '../rep/rep.component';
-import { WeightPipe } from '../weight.pipe';
+import { Rep, RepComponent } from '../../rep/rep.component';
+import { WeightPipe } from '../../weight.pipe';
+import { SettingsService } from '../../settings.service';
 
 @Component({
     selector: 'olab-subset',
@@ -14,8 +15,10 @@ export class SubsetComponent {
     @HostBinding('class.compact')
     isCompact = false;
 
-    @Input() showType = true;
-    @Input({ required: true }) subset!: SubSet;
+    @Input({ required: true })
+    subset!: SubSet;
+
+    constructor(protected settings: SettingsService) {}
 }
 
 export interface SubSet {
