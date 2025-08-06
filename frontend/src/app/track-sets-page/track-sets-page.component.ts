@@ -3,6 +3,7 @@ import {
     ChangeDetectionStrategy,
     Component,
     ElementRef,
+    Input,
     ViewChild
 } from '@angular/core';
 import { Set } from '../set/set.component';
@@ -18,7 +19,10 @@ import { RecordSetComponent } from '../record-set/record-set.component';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TrackSetsPageComponent implements AfterViewInit {
+    @Input({ required: true }) exercise!: string;
+
     constructor() {
+        // TODO: Get sets for history based on exercise, and complete sets for specific exercise.
         this.sets.push(this.sets[0]);
         this.sets.push(this.sets[0]);
         this.sets.push(this.sets[0]);
