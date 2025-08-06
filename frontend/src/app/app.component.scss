@@ -7,3 +7,12 @@
   margin: 5px;
   background-color: var(--nav-btn-color);
 }
+
+.nav {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+  x: 0;
+  y: -10px;
+}
