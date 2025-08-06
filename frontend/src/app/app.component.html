@@ -2,6 +2,5 @@
 <button (click)="settings.toggleCompactView()">compact</button>
 <button (click)="settings.toggleRepTypes()">type</button>
 <button (click)="settings.toggleUnits()">units</button>
-@for (set of sets; track $index) {
-  <olab-performance [set]="set"></olab-performance>
-}
+
+<router-outlet></router-outlet>
