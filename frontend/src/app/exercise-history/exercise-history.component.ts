@@ -4,12 +4,14 @@ import {
     Component,
     ElementRef,
     Input,
+    OnInit,
     ViewChild
 } from '@angular/core';
 import { Set } from '../set/set.component';
 import { RepType } from '../rep/rep.component';
 import { PerformanceHistoryComponent } from '../performance-history/performance-history.component';
 import { RecordSetComponent } from '../record-set/record-set.component';
+import { ApiService } from '../api.service';
 
 @Component({
     selector: 'olab-exercise-history',
@@ -18,52 +20,16 @@ import { RecordSetComponent } from '../record-set/record-set.component';
     styleUrl: './exercise-history.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ExerciseHistoryComponent {
+export class ExerciseHistoryComponent implements OnInit {
     @Input({ required: true }) exercise!: string;
+    protected sets: Set[] = [];
 
-    constructor() {
-        // TODO: Get sets for history based on exercise, and complete sets for specific exercise.
-        this.sets.push(this.sets[0]);
-        this.sets.push(this.sets[0]);
-        this.sets.push(this.sets[0]);
-        this.sets.push(this.sets[0]);
+    constructor(private api: ApiService) {}
+
+    ngOnInit() {
+        this.api.getAllForExercise('Bicep Curl').subscribe(sets => {
+            this.sets = sets;
+            console.log(this.sets);
+        });
     }
-
-    sets: Set[] = [
-        {
-            date: new Date(),
-            reps: [
-                {
-                    weight: 25,
-                    type: RepType.Regular,
-                    amount: 10
-                },
-                {
-                    weight: 25,
-                    type: RepType.AlternatingWithLongLengthPartial,
-                    amount: 7
-                },
-                {
-                    weight: 25,
-                    type: RepType.AlternatingWithLongLengthPartial,
-                    amount: 4
-                },
-                {
-                    weight: 20,
-                    type: RepType.AlternatingWithLongLengthPartial,
-                    amount: 8
-                },
-                {
-                    weight: 20,
-                    type: RepType.LongLengthPartial,
-                    amount: 5
-                },
-                {
-                    weight: 17.5,
-                    type: RepType.LongLengthPartial,
-                    amount: 6
-                }
-            ]
-        }
-    ];
 }
