@@ -22,8 +22,12 @@ app.UseMiddleware<DomainValidationExceptionMiddleware>();
 
 var repo = new ExerciseProgressRepository();
 
+app.MapGet(
+    "/api/exercises",
+    () => Results.Ok(ExerciseName.KnownExercises));
+
 app.MapPost(
-    "/api/exercise/{exercise}/sets",
+    "/api/exercises/{exercise}/sets",
     async (string exercise, string reps) =>
     {
         var progress = await repo.FindByExerciseAsync(new(exercise));
@@ -36,7 +40,7 @@ app.MapPost(
     });
 
 app.MapGet(
-    "/api/exercise/{exercise}/sets",
+    "/api/exercises/{exercise}/sets",
     async (string exercise, string reps) =>
     {
         var progress = await repo.FindByExerciseAsync(new(exercise));
