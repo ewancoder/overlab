@@ -6,3 +6,7 @@ html {
   background:
     linear-gradient(var(--background-filter), var(--background-filter)), var(--background-url);
 }
+
+html, body {
+  height: 100vw;
+}

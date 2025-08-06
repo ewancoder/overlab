@@ -1,3 +1,9 @@
+:host {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .top-nav-btn {
   cursor: pointer;
   height: 40px;

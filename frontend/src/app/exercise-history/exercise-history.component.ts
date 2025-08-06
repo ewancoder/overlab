@@ -12,13 +12,13 @@ import { PerformanceHistoryComponent } from '../performance-history/performance-
 import { RecordSetComponent } from '../record-set/record-set.component';
 
 @Component({
-    selector: 'olab-track-sets-page',
-    imports: [PerformanceHistoryComponent, RecordSetComponent],
-    templateUrl: './track-sets-page.component.html',
-    styleUrl: './track-sets-page.component.scss',
+    selector: 'olab-exercise-history',
+    imports: [PerformanceHistoryComponent],
+    templateUrl: './exercise-history.component.html',
+    styleUrl: './exercise-history.component.scss',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TrackSetsPageComponent implements AfterViewInit {
+export class ExerciseHistoryComponent {
     @Input({ required: true }) exercise!: string;
 
     constructor() {
@@ -27,13 +27,6 @@ export class TrackSetsPageComponent implements AfterViewInit {
         this.sets.push(this.sets[0]);
         this.sets.push(this.sets[0]);
         this.sets.push(this.sets[0]);
-    }
-
-    @ViewChild('history') historyElement!: ElementRef<HTMLDivElement>;
-
-    ngAfterViewInit() {
-        this.historyElement.nativeElement.scrollTop =
-            this.historyElement.nativeElement.scrollHeight;
     }
 
     sets: Set[] = [

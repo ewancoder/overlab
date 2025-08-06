@@ -1,7 +1,12 @@
 import { Routes } from '@angular/router';
-import { TrackSetsPageComponent } from './track-sets-page/track-sets-page.component';
+import { ExerciseTrackerComponent } from './exercise-tracker/exercise-tracker.component';
+import { ExerciseHistoryComponent } from './exercise-history/exercise-history.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/sets/test', pathMatch: 'full' },
-    { path: 'sets/:exercise', component: TrackSetsPageComponent }
+    {
+        path: 'sets',
+        component: ExerciseTrackerComponent,
+        children: [{ path: ':exercise', component: ExerciseHistoryComponent }]
+    }
 ];
