@@ -7,7 +7,9 @@ $light-theme: (
   regular-rep-color: #8eedf8,
   allp-rep-color: #8ef897,
   llp-rep-color: #f8ea8e,
-  nav-btn-color: rgba(204, 221, 204, 0.8)
+  nav-btn-color: rgba(204, 221, 204, 0.8),
+  btn-color: rgba(238, 238, 238, 0.844),
+  btn-color-hover: #ddd
 );
 
 $dark-theme: (
@@ -19,7 +21,9 @@ $dark-theme: (
   regular-rep-color: #066773,
   allp-rep-color: #03510d,
   llp-rep-color: #4c3f04,
-  nav-btn-color: rgba(58, 81, 30, 0.8)
+  nav-btn-color: rgba(58, 81, 30, 0.8),
+  btn-color: rgba(27, 27, 27, 0.844),
+  btn-color-hover: rgba(14, 14, 14, 0.844)
 );
 
 @mixin theme($theme) {
@@ -32,6 +36,9 @@ $dark-theme: (
   --allp-rep-color: #{map-get($theme, allp-rep-color)};
   --llp-rep-color: #{map-get($theme, llp-rep-color)};
   --nav-btn-color: #{map-get($theme, nav-btn-color)};
+  --btn-color: #{map-get($theme, btn-color)};
+  --btn-border: #{map-get($theme, btn-border)};
+  --btn-color-hover: #{map-get($theme, btn-color-hover)};
 }
 
 .light-theme {
@@ -40,4 +47,25 @@ $dark-theme: (
 
 .dark-theme {
   @include theme($dark-theme);
+}
+
+input {
+  border: none;
+  line-height: 1rem;
+  height: 2rem;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 1px 3px 0px;
+}
+
+button {
+  font-weight: bold;
+  border: none;
+  height: 2rem;
+  line-height: 1rem;
+  background-color: var(--btn-color);
+  cursor: pointer;
+  color: var(--primary-color);
+}
+
+button:hover {
+  background-color: var(--btn-color-hover);
 }
