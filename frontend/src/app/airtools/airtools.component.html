@@ -1,0 +1,170 @@
+@let utc = date | async;
+<h2>UTC time: {{utc}}</h2>
+<div class="line">
+  <div class="input">
+    <label>Flight number (calculated)</label>
+    <input value="{{generateFlightNumber(utc!, departureName.value, destinationName.value, scheduledTakeoff.value, distance.value)}}" />
+  </div>
+</div>
+<div class="line">
+  <div class="input">
+    <label>Flight info</label>
+    <input #flightInfo [(ngModel)]="flightInfo.value" value="our general aviation Citation X, tail number N5NK" />
+  </div>
+  <div class="input">
+    <label>Cruising altitude</label>
+    <input #cruisingAlt [(ngModel)]="cruisingAlt.value" />
+  </div>
+  <div class="input">
+    <label>Route distance (nm)</label>
+    <input #distance [(ngModel)]="distance.value" />
+  </div>
+  <div class="input">
+    <label>Scheduled takeoff (UTC)</label>
+    <input #scheduledTakeoff [(ngModel)]="scheduledTakeoff.value" />
+  </div>
+</div>
+<div class="line">
+  <div class="input">
+    <label>Departure name</label>
+    <input #departureName [(ngModel)]="departureName.value" />
+  </div>
+  <div class="input">
+    <label>Timezone</label>
+    <input #departureTimezone [(ngModel)]="departureTimezone.value" />
+  </div>
+  <h3>{{getLocalTime(utc, departureTimezone.value)}}</h3>
+</div>
+<div class="line">
+  <div class="input">
+    <label>Destination name</label>
+    <input #destinationName [(ngModel)]="destinationName.value" />
+  </div>
+  <div class="input">
+    <label>Timezone</label>
+    <input #destinationTimezone [(ngModel)]="destinationTimezone.value" />
+  </div>
+  <h3>{{getLocalTime(utc, destinationTimezone.value)}}</h3>
+</div>
+<div class="line">
+  <div class="input">
+    <label>Destination weather (clear/cloudy/cloudy with some thunderstorms/heavy thunderstorms)</label>
+    <input #weatherClouds [(ngModel)]="weatherClouds.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather C temp</label>
+    <input #weatherTempC [(ngModel)]="weatherTempC.value" />
+  </div>
+</div>
+<div class="line">
+  <div class="input">
+    <label>ETE to destination (minutes)</label>
+    <input #ete [(ngModel)]="ete.value" />
+  </div>
+  <div class="input">
+    <label>ETE to descent (minutes)</label>
+    <input #descentEte [(ngModel)]="descentEte.value" />
+  </div>
+  <div class="input">
+    <label>Ground speed kts</label>
+    <input #groundSpeed [(ngModel)]="groundSpeed.value" />
+  </div>
+</div>
+
+<h2>Takeoff</h2>
+<h4>SWITCH ON SEATBELTS SIGN</h4>
+<p>Good {{getTimeOfDay(getLocalTime(utc, departureTimezone.value))}}, ladies and gentlemen, this is your Captain Zyranau speaking from the flight deck.</p>
+<p>Welcome aboard {{flightInfo.value}}, to {{destinationName.value}}.</p>
+<p>Our flight time today will be approximately {{getFlightTime(ete.value)}}, with the distance being {{getDistanceInKm(distance.value)}} km (or {{getDistanceInMiles(distance.value)}} miles).</p>
+<p>The weather in {{destinationName.value}} is {{weatherClouds.value}} with a temperature of {{weatherTempC.value}} degrees Celsius (or {{getFTemp(weatherTempC.value)}} Fahrenheit).</p>
+<p>We are scheduled for takeoff at {{getLocalScheduledForTakeoff(scheduledTakeoff.value, departureTimezone.value)}} local time.</p>
+<p>We are just completing our final checks and expect to push back and start rolling shortly.</p>
+<p>Please ensure your seat belts are fastened and follow safety instructions.</p>
+<p>Thank you for flying with us.</p>
+
+<h2>Before taxi</h2>
+<p>Ladies and gentlemen, we've been cleared for takeoff.<span style="font-size: 10px;"> Or having delays.</span></p>
+<p>We expect a smooth climb, please remain seated with your seat belts fastened.</p>
+<p>Thank you.</p>
+
+<h2>Climbing above 10k</h2>
+<div class="line inline">
+  <div class="input">
+    <label>ETE to destination (minutes)</label>
+    <input #ete [(ngModel)]="ete.value" />
+  </div>
+</div>
+<h4>SWITCH OFF SEATBELTS SIGN</h4>
+<p>Ladies and gentlemen, this is your Captain speaking.</p>
+<p>We are now climbing through <b>[[[MSL]]]</b> feet en route to {{destinationName.value}} with a cruising altitude of {{cruisingAlt.value}} feet (or {{getAltMeters(cruisingAlt.value)}} meters).</p>
+<p>Our flight time remains {{getFlightTime(ete.value)}}.</p>
+<p>The seat belt sign has been turned off, but please keep your seat belts fastened while seated for your safety.</p>
+<p>Thank you for flying with us.</p>
+
+<h2>Cruise</h2>
+<div class="line inline">
+  <div class="input">
+    <label>Cruising altitude</label>
+    <input #cruisingAlt [(ngModel)]="cruisingAlt.value" />
+  </div>
+  <div class="input">
+    <label>ETE to descent (minutes)</label>
+    <input #descentEte [(ngModel)]="descentEte.value" />
+  </div>
+  <div class="input">
+    <label>Ground speed kts</label>
+    <input #groundSpeed [(ngModel)]="groundSpeed.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather (clear/cloudy/cloudy with some thunderstorms/heavy thunderstorms)</label>
+    <input #weatherClouds [(ngModel)]="weatherClouds.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather C temp</label>
+    <input #weatherTempC [(ngModel)]="weatherTempC.value" />
+  </div>
+</div>
+<p>Ladies and gentlemen, we're cruising at {{cruisingAlt.value}} feet (or {{getAltMeters(cruisingAlt.value)}} meters), about {{getFlightTime(ete.value)}} from {{destinationName.value}}, and we expect the descent to start in {{getFlightTime(descentEte.value)}}.</p>
+<p>We are currently flying with the ground speed of {{getKmGroundSpeed(groundSpeed.value)}} kmh (or {{getMilesGroundSpeed(groundSpeed.value)}} mph).</p>
+<p>{{destinationName.value}} is {{weatherClouds.value}} with a temperature of {{weatherTempC.value}} degrees Celsius (or {{getFTemp(weatherTempC.value)}} Fahrenheit).</p>
+<p>The cabin crew will be passing through with refreshments soon.</p>
+
+<h2>Descent</h2>
+<div class="line inline">
+  <div class="input">
+    <label>ETE to destination (minutes)</label>
+    <input #ete [(ngModel)]="ete.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather (clear/cloudy/cloudy with some thunderstorms/heavy thunderstorms)</label>
+    <input #weatherClouds [(ngModel)]="weatherClouds.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather C temp</label>
+    <input #weatherTempC [(ngModel)]="weatherTempC.value" />
+  </div>
+</div>
+<h4>SWITCH ON SEATBELTS SIGN</h4>
+<p>Good {{getTimeOfDay(getLocalTime(utc, destinationTimezone.value))}}, ladies and gentlemen, Captain Zyranau speaking.</p>
+<p>We're beginning our descent into {{destinationName.value}}.</p>
+<p>We expect to land in about {{getFlightTime(ete.value)}} at {{getLocalTimeInMinutes(utc, destinationTimezone.value, ete.value)}} local time.</p>
+<p>The weather is {{weatherClouds.value}} with a temperature of {{weatherTempC.value}} degrees Celsius (or {{getFTemp(weatherTempC.value)}} Fahrenheit).</p>
+<p>Please ensure your tray tables are stowed, seats are upright, and seat belts are fastened.</p>
+<p>Thank you for flying with us, and we hope to see you again soon.</p>
+
+<h2>After landing</h2>
+<div class="line inline">
+  <div class="input">
+    <label>Destination weather (clear/cloudy/cloudy with some thunderstorms/heavy thunderstorms)</label>
+    <input #weatherClouds [(ngModel)]="weatherClouds.value" />
+  </div>
+  <div class="input">
+    <label>Destination weather C temp</label>
+    <input #weatherTempC [(ngModel)]="weatherTempC.value" />
+  </div>
+</div>
+<p>Welcome to {{destinationName.value}}, ladies and gentlemen, where local time is {{getLocalTimeInMinutes(utc, destinationTimezone.value, '0')}}.</p>
+<p>We've arrived at <b>[[[GATE]]]</b> and we'll have you at the terminal shortly.</p>
+<p>The weather outside is {{weatherClouds.value}} with a temperature of {{weatherTempC.value}} degrees Celsius (or {{getFTemp(weatherTempC.value)}} Fahrenheit).</p>
+<p>Please remain seated until the seat belt sign is turned off.</p>
+<p>Thank you for choosing us, and we wish you a pleasant stay and safe onward journey.</p>

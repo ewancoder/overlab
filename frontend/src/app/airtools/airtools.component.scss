@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.inline {
+  border: 1px solid;
+  padding: 10px;
+  margin: 10px;
+}
+
+p {
+  margin: 0;
+}
