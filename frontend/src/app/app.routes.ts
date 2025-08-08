@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ExerciseTrackerComponent } from './exercise-tracker/exercise-tracker.component';
 import { ExerciseHistoryComponent } from './exercise-history/exercise-history.component';
+import { AirtoolsComponent } from './airtools/airtools.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: '/sets/test', pathMatch: 'full' },
@@ -8,5 +9,6 @@ export const routes: Routes = [
         path: 'sets',
         component: ExerciseTrackerComponent,
         children: [{ path: ':exercise', component: ExerciseHistoryComponent }]
-    }
+    },
+    { path: 'air', component: AirtoolsComponent }
 ];
