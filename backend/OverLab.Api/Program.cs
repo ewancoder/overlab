@@ -28,11 +28,11 @@ app.MapGet(
 
 app.MapPost(
     "/api/exercises/{exercise}/sets",
-    async (string exercise, string reps) =>
+    async (string exercise, RepsDto reps) =>
     {
         var progress = await repo.FindByExerciseAsync(new(exercise));
 
-        progress.CompleteSet(new(reps));
+        progress.CompleteSet(new(reps.Reps));
 
         await repo.SaveAsync(progress);
 
@@ -41,7 +41,7 @@ app.MapPost(
 
 app.MapGet(
     "/api/exercises/{exercise}/sets",
-    async (string exercise, string reps) =>
+    async (string exercise) =>
     {
         var progress = await repo.FindByExerciseAsync(new(exercise));
 
@@ -96,3 +96,5 @@ public sealed class ExerciseProgressRepository
         _data[exerciseName] = exerciseProgress;
     }
 }
+
+public sealed record RepsDto(string Reps);

@@ -19,6 +19,6 @@ export class ApiService {
     }
 
     completeSet(exercise: string, rep: Rep): Observable<Set> {
-        return this.http.post<Set>(`${this.exercisesUri}/${exercise}/sets?reps=${rep}`, null);
+        return this.http.post<Set>(`${this.exercisesUri}/${exercise}/sets`, { reps: rep });
     }
 }
