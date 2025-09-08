@@ -21,4 +21,3 @@ COPY --from=build /usr/src/app/dist/overlab/browser /usr/share/nginx/html
 
 HEALTHCHECK CMD ["wget", "--spider", "http://localhost:8080"]
 CMD ["nginx", "-g", "daemon off;"]
-
